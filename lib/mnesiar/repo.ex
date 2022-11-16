@@ -472,7 +472,7 @@ defmodule Mnesiar.Repo do
 
           result =
             case result do
-              {:error, _code, %{reason: reason} = _data, _messages} -> reason
+              {:error, _code, _data, _messages} = e -> e
               :ok -> :ok
               _ -> result
             end
