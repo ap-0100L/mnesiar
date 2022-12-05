@@ -28,11 +28,11 @@ config :mnesiar,
     # Skip create tables, all tables will be remote on these nodes
     remote_access_only_node_name_prefixes: [],
     schema_ram_copies_node_name_prefixes: [],
-    schema_disc_copies_node_name_prefixes: [~r/consumer@/iu, ~r/telegram_bot_api@/iu, ~r/rest_api_client@/iu],
+    schema_disc_copies_node_name_prefixes: [~r/consumer@/iu, ~r/telegram_bot_api@/iu, ~r/transport@/iu],
     entities: [
       %{
         module: ApiCore.Db.InMemory.Dbo.SecurityToken,
-        ram_copies_node_name_prefixes: [~r/rest_api@/iu, ~r/rest_api_client@/iu],
+        ram_copies_node_name_prefixes: [~r/rest_api@/iu, ~r/transport@/iu],
         disc_copies_node_name_prefixes: [~r/consumer@/iu],
         disc_only_copies_node_name_prefixes: [],
         master_nodes: [:"consumer@127.0.0.1"],
@@ -42,7 +42,7 @@ config :mnesiar,
       %{
         module: ApiCore.Db.InMemory.Dbo.Recipient,
         # [] or :all; if all [] table will be remote, if node in schema_*_copies list but not in table *_copies_node table will be remote too
-        ram_copies_node_name_prefixes: [~r/rest_api@/iu, ~r/rest_api_client@/iu],
+        ram_copies_node_name_prefixes: [~r/rest_api@/iu, ~r/transport@/iu],
         disc_copies_node_name_prefixes: [~r/consumer@/iu],
         disc_only_copies_node_name_prefixes: [],
         master_nodes: [:"consumer@127.0.0.1"],
