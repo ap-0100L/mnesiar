@@ -1206,6 +1206,7 @@ defmodule Mnesiar.Repo do
       @doc """
 
       """
+      @impl true
       def get_persistent!(id: id) do
         if is_nil(@persistent_schema) do
           throw_error!(:CODE_PERSISTENT_SCHEMA_IS_NIL_MNESIAR_ERROR, ["Persistent schema is nil"], mnesiar_repo: SelfModule)
@@ -1240,6 +1241,7 @@ defmodule Mnesiar.Repo do
       @doc """
 
       """
+      @impl true
       def get_by_id!(id) do
         result = MnesiarRepo.get_by_id!(@table_name, id)
 
