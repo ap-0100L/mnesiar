@@ -2,7 +2,7 @@ defmodule Mnesiar do
   ##############################################################################
   ##############################################################################
   @moduledoc """
-  Documentation for `Mnesiar`.
+  Documentation for Mnesiar.
   """
 
   use GenServer
@@ -56,13 +56,13 @@ defmodule Mnesiar do
                 result = :net_kernel.monitor_nodes(true)
 
                 if :ok != result do
-                  throw_error!(:CODE_CAN_NOT_ENABLE_MONITOR_ERROR, ["Can not enable notification monitor on node connection events"], reason: result)
+                  UniError.raise_error!(:CODE_CAN_NOT_ENABLE_MONITOR_ERROR, ["Can not enable notification monitor on node connection events"], reason: result)
                 end
 
                 state
 
               unexpected ->
-                throw_error!(:CODE_UNKNOWN_SERVER_MODE_ERROR, ["Unknown server mode"], reason: unexpected)
+                UniError.raise_error!(:CODE_UNKNOWN_SERVER_MODE_ERROR, ["Unknown server mode"], reason: unexpected)
             end
 
           :ok = Repo.start!(wait_for_start_timeout)
@@ -160,7 +160,7 @@ defmodule Mnesiar do
 
           case mode do
             :standalone ->
-              throw_error!(:CODE_WRONG_SERVER_MODE_ERROR, ["Wrong server mode"], mode: mode)
+              UniError.raise_error!(:CODE_WRONG_SERVER_MODE_ERROR, ["Wrong server mode"], mode: mode)
 
             :cluster ->
               Logger.info("[#{inspect(SelfModule)}][#{inspect(__ENV__.function)}] Node #{inspect(node)} connected")
@@ -211,7 +211,7 @@ defmodule Mnesiar do
               state
 
             unexpected ->
-              throw_error!(:CODE_UNKNOWN_SERVER_MODE_ERROR, ["Unknown server mode"], reason: unexpected)
+              UniError.raise_error!(:CODE_UNKNOWN_SERVER_MODE_ERROR, ["Unknown server mode"], reason: unexpected)
           end
         )
       )
@@ -233,7 +233,7 @@ defmodule Mnesiar do
 
           case mode do
             :standalone ->
-              throw_error!(:CODE_WRONG_SERVER_MODE_ERROR, ["Wrong server mode"], mode: mode)
+              UniError.raise_error!(:CODE_WRONG_SERVER_MODE_ERROR, ["Wrong server mode"], mode: mode)
 
             :cluster ->
               Logger.info("[#{inspect(SelfModule)}][#{inspect(__ENV__.function)}] Node #{inspect(node)} disconnected")
@@ -241,7 +241,7 @@ defmodule Mnesiar do
               state
 
             unexpected ->
-              throw_error!(:CODE_UNKNOWN_SERVER_MODE_ERROR, ["Unknown server mode"], reason: unexpected)
+              UniError.raise_error!(:CODE_UNKNOWN_SERVER_MODE_ERROR, ["Unknown server mode"], reason: unexpected)
           end
         )
       )
@@ -284,7 +284,7 @@ defmodule Mnesiar do
       end
 
     if schema_ram_copies_nodes != [] and schema_disc_copies_nodes != [] do
-      throw_error!(
+      UniError.raise_error!(
         :CODE_CONFLICT_SCHEMA_STORAGE_TYPE_ERROR,
         ["Node can not be disc_copies and ram_copies schema storage type in same time"],
         node: node,
@@ -400,7 +400,7 @@ defmodule Mnesiar do
       end
 
     if schema_ram_copies_nodes != [] and schema_disc_copies_nodes != [] do
-      throw_error!(
+      UniError.raise_error!(
         :CODE_CONFLICT_SCHEMA_STORAGE_TYPE_ERROR,
         ["Node can not be disc_copies and ram_copies schema storage type in same time"],
         node: node,
@@ -441,7 +441,7 @@ defmodule Mnesiar do
         {:ok, is_remote_empty} = RPCUtils.call_rpc!(node, Mnesiar.Repo, :ensure_db_is_empty!, [])
 
         if not is_remote_empty do
-          throw_error!(:CODE_REMOTE_IN_MEMORY_DB_NOT_EMPTY_ERROR, ["In-memory DB on remote node #{node} is not empty"], node: node)
+          UniError.raise_error!(:CODE_REMOTE_IN_MEMORY_DB_NOT_EMPTY_ERROR, ["In-memory DB on remote node #{node} is not empty"], node: node)
         end
 
         :ok = Repo.change_table_copy_storage_type!(:schema, node, storage_type)
@@ -484,7 +484,7 @@ defmodule Mnesiar do
           if (ram_copies_nodes != [] and (disc_copies_nodes != [] or disc_only_copies_nodes != [])) or
                (disc_copies_nodes != [] and (ram_copies_nodes != [] or disc_only_copies_nodes != [])) or
                (disc_only_copies_nodes != [] and (ram_copies_nodes != [] or disc_copies_nodes != [])) do
-            throw_error!(:CODE_CONFLICT_TABLE_STORAGE_TYPE_ERROR, ["Table on node can not be ram_copies, disc_copies, disc_only_copies storage type in same time"], node: node, entity: entity)
+            UniError.raise_error!(:CODE_CONFLICT_TABLE_STORAGE_TYPE_ERROR, ["Table on node can not be ram_copies, disc_copies, disc_only_copies storage type in same time"], node: node, entity: entity)
           end
 
           if ram_copies_nodes != [] or disc_copies_nodes != [] or disc_only_copies_nodes != [] do
@@ -630,13 +630,13 @@ defmodule Mnesiar do
       if ram_copies_node_name_prefixes == nil or
            disc_copies_node_name_prefixes == nil or
            disc_only_copies_node_name_prefixes == nil do
-        throw_error!(:CODE_ENTITY_NODE_NAME_PREFIXES_CAN_NOT_BE_NIL_ERROR, ["ram_copies_node_name_prefixes, disc_copies_node_name_prefixes, disc_only_copies_node_name_prefixes can not be nil, use [] for empty list"], entity: entity)
+        UniError.raise_error!(:CODE_ENTITY_NODE_NAME_PREFIXES_CAN_NOT_BE_NIL_ERROR, ["ram_copies_node_name_prefixes, disc_copies_node_name_prefixes, disc_only_copies_node_name_prefixes can not be nil, use [] for empty list"], entity: entity)
       end
 
       if ram_copies_is_empty and
            disc_copies_is_empty and
            disc_only_copies_is_empty do
-        throw_error!(:CODE_ENTITY_NODE_NAME_PREFIXES_CAN_NOT_BE_EMPTY_IN_SAME_TIME_ERROR, ["ram_copies_node_name_prefixes, disc_copies_node_name_prefixes, disc_only_copies_node_name_prefixes can not be empty in same time"], entity: entity)
+        UniError.raise_error!(:CODE_ENTITY_NODE_NAME_PREFIXES_CAN_NOT_BE_EMPTY_IN_SAME_TIME_ERROR, ["ram_copies_node_name_prefixes, disc_copies_node_name_prefixes, disc_only_copies_node_name_prefixes can not be empty in same time"], entity: entity)
       end
 
       if (ram_copies_node_name_prefixes == :all and
@@ -648,13 +648,13 @@ defmodule Mnesiar do
            (disc_only_copies_node_name_prefixes == :all and
               (not disc_copies_is_empty or
                  not ram_copies_is_empty)) do
-        throw_error!(:CODE_CONFLICT_ENTITY_NODE_NAME_PREFIXES_ERROR, ["If one of ram_copies_node_name_prefixes, disc_copies_node_name_prefixes, disc_only_copies_node_name_prefixes is :all, other *_node_name_prefixes must be []"], entity: entity)
+        UniError.raise_error!(:CODE_CONFLICT_ENTITY_NODE_NAME_PREFIXES_ERROR, ["If one of ram_copies_node_name_prefixes, disc_copies_node_name_prefixes, disc_only_copies_node_name_prefixes is :all, other *_node_name_prefixes must be []"], entity: entity)
       end
 
       master_nodes = entity[:master_nodes]
 
       if master_nodes == nil do
-        throw_error!(:CODE_TABLE_MASTER_NODES_CAN_NOT_BE_NIL_ERROR, ["master_nodes can not be nil, use [] for empty list"], entity: entity)
+        UniError.raise_error!(:CODE_TABLE_MASTER_NODES_CAN_NOT_BE_NIL_ERROR, ["master_nodes can not be nil, use [] for empty list"], entity: entity)
       end
     end)
 
@@ -672,7 +672,7 @@ defmodule Mnesiar do
         if remote_access_only_node_name_prefixes == nil or
              schema_ram_copies_node_name_prefixes == nil or
              schema_disc_copies_node_name_prefixes == nil do
-          throw_error!(:CODE_SCHEMA_NODE_NAME_PREFIXES_CAN_NOT_BE_NIL_ERROR, ["remote_access_only_node_name_prefixes, schema_ram_copies_node_name_prefixes, schema_disc_copies_node_name_prefixes can not be nil, use [] for empty list"],
+          UniError.raise_error!(:CODE_SCHEMA_NODE_NAME_PREFIXES_CAN_NOT_BE_NIL_ERROR, ["remote_access_only_node_name_prefixes, schema_ram_copies_node_name_prefixes, schema_disc_copies_node_name_prefixes can not be nil, use [] for empty list"],
             schema_ram_copies_node_name_prefixes: schema_ram_copies_node_name_prefixes,
             schema_disc_copies_node_name_prefixes: schema_disc_copies_node_name_prefixes
           )
@@ -683,7 +683,7 @@ defmodule Mnesiar do
         schema_disc_copies_is_empty = schema_disc_copies_node_name_prefixes == []
 
         if remote_access_only_is_empty and schema_ram_copies_is_empty and schema_disc_copies_is_empty do
-          throw_error!(:CODE_SCHEMA_NODE_NAME_PREFIXES_CAN_NOT_BE_EMPTY_IN_SAME_TIME_ERROR, ["remote_access_only_node_name_prefixes, schema_ram_copies_node_name_prefixes, schema_disc_copies_node_name_prefixes can not be empty in same time"],
+          UniError.raise_error!(:CODE_SCHEMA_NODE_NAME_PREFIXES_CAN_NOT_BE_EMPTY_IN_SAME_TIME_ERROR, ["remote_access_only_node_name_prefixes, schema_ram_copies_node_name_prefixes, schema_disc_copies_node_name_prefixes can not be empty in same time"],
             remote_access_only_node_name_prefixes: remote_access_only_node_name_prefixes,
             schema_ram_copies_node_name_prefixes: schema_ram_copies_node_name_prefixes,
             schema_disc_copies_node_name_prefixes: schema_disc_copies_node_name_prefixes
@@ -693,7 +693,7 @@ defmodule Mnesiar do
         if (remote_access_only_node_name_prefixes == :all and (not schema_disc_copies_is_empty or not schema_disc_copies_is_empty)) or
              (schema_ram_copies_node_name_prefixes == :all and (not remote_access_only_is_empty or not schema_disc_copies_is_empty)) or
              (schema_disc_copies_node_name_prefixes == :all and (not remote_access_only_is_empty or not schema_ram_copies_is_empty)) do
-          throw_error!(:CODE_CONFLICT_SCHEMA_NODE_NAME_PREFIXES_ERROR, ["If one of remote_access_only_node_name_prefixes, schema_ram_copies_node_name_prefixes, schema_disc_copies_node_name_prefixes is :all, other schema_*_node_name_prefixes must be []"],
+          UniError.raise_error!(:CODE_CONFLICT_SCHEMA_NODE_NAME_PREFIXES_ERROR, ["If one of remote_access_only_node_name_prefixes, schema_ram_copies_node_name_prefixes, schema_disc_copies_node_name_prefixes is :all, other schema_*_node_name_prefixes must be []"],
             remote_access_only_node_name_prefixes: remote_access_only_node_name_prefixes,
             schema_ram_copies_node_name_prefixes: schema_ram_copies_node_name_prefixes,
             schema_disc_copies_node_name_prefixes: schema_disc_copies_node_name_prefixes
@@ -703,7 +703,7 @@ defmodule Mnesiar do
         :ok
 
       unexpected ->
-        throw_error!(:CODE_UNKNOWN_IN_MEMORY_DB_SERVER_MODE_ERROR, ["Unknown in-memory DB server mode"],
+        UniError.raise_error!(:CODE_UNKNOWN_IN_MEMORY_DB_SERVER_MODE_ERROR, ["Unknown in-memory DB server mode"],
           node: node,
           reason: unexpected
         )
