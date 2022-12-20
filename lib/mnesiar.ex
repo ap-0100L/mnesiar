@@ -597,27 +597,27 @@ defmodule Mnesiar do
         config
       end
 
-    throw_if_empty!(config, :map, "Wrong config value")
+    raise_if_empty!(config, :map, "Wrong config value")
 
-    {:ok, mode} = throw_if_empty!(config, :mode, :atom, "Wrong mode value")
+    {:ok, mode} = raise_if_empty!(config, :mode, :atom, "Wrong mode value")
 
-    {:ok, entities} = throw_if_empty!(config, :entities, :list, "Wrong entities value")
+    {:ok, entities} = raise_if_empty!(config, :entities, :list, "Wrong entities value")
 
-    {:ok, wait_for_tables_timeout} = throw_if_empty!(config, :wait_for_tables_timeout, :integer, "Wrong entities value")
+    {:ok, wait_for_tables_timeout} = raise_if_empty!(config, :wait_for_tables_timeout, :integer, "Wrong entities value")
 
     leader_node = config[:leader_node]
     creator_node = config[:creator_node]
 
     if not is_nil(leader_node) do
-      throw_if_empty!(leader_node, :atom, "Wrong leader_node value")
+      raise_if_empty!(leader_node, :atom, "Wrong leader_node value")
     end
 
     if not is_nil(creator_node) do
-      throw_if_empty!(creator_node, :atom, "Wrong creator_node value")
+      raise_if_empty!(creator_node, :atom, "Wrong creator_node value")
     end
 
     Utils.enum_each!(entities, fn entity ->
-      {:ok, module} = throw_if_empty!(entity, :module, :atom, "Wrong module value")
+      {:ok, module} = raise_if_empty!(entity, :module, :atom, "Wrong module value")
 
       ram_copies_node_name_prefixes = entity[:ram_copies_node_name_prefixes]
       disc_copies_node_name_prefixes = entity[:disc_copies_node_name_prefixes]
@@ -663,7 +663,7 @@ defmodule Mnesiar do
         :ok
 
       :cluster ->
-        {:ok, cookie} = throw_if_empty!(config, :cookie, :atom, "Wrong cookie value")
+        {:ok, cookie} = raise_if_empty!(config, :cookie, :atom, "Wrong cookie value")
 
         remote_access_only_node_name_prefixes = config[:remote_access_only_node_name_prefixes]
         schema_ram_copies_node_name_prefixes = config[:schema_ram_copies_node_name_prefixes]

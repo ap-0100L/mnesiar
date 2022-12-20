@@ -54,7 +54,7 @@ defmodule Mnesiar.Repo do
   end
 
   def wait_for_start!({:ok, status}, _count) do
-    UniError.raise_error!(:CODE_UNEXPECTED_IN_MEMORY_DB_STATE_ERROR, ["Unexpected in-memory DB state"], state: status)
+    UniError.raise_error!(:CODE_START_UNEXPECTED_IN_MEMORY_DB_STATE_ERROR, ["Unexpected in-memory DB state"], state: status)
   end
 
   def wait_for_start!(_status, 0) do
@@ -112,7 +112,7 @@ defmodule Mnesiar.Repo do
   end
 
   def wait_for_stop!({:ok, status}, _count) do
-    UniError.raise_error!(:CODE_UNEXPECTED_IN_MEMORY_DB_STATE_ERROR, ["Unexpected in-memory DB state"], state: status)
+    UniError.raise_error!(:CODE_STOP_UNEXPECTED_IN_MEMORY_DB_STATE_ERROR, ["Unexpected in-memory DB state"], state: status)
   end
 
   def wait_for_stop!(_status, 0) do
@@ -290,7 +290,7 @@ defmodule Mnesiar.Repo do
       case result do
         value when value in [:ok, {:atomic, :ok}] ->
           for item <- indexes do
-            result = throw_if_empty!(item, :atom, "Wrong index value")
+            result = raise_if_empty!(item, :atom, "Wrong index value")
 
             result = Mnesia.add_table_index(table, item)
 
@@ -990,7 +990,7 @@ defmodule Mnesiar.Repo do
 
           value =
             if not is_nil(value_from_atom_key) and not is_nil(value_from_string_key) do
-              Macros.UniError.raise_error!(:CODE_MAP_HAS_ATOM_AND_STRING_KEYS_WITH_SAME_NAME_ERROR, ["Map has atom and string keys with same name"], record_name: record_name, key: attribute)
+              UniError.raise_error!(:CODE_MAP_HAS_ATOM_AND_STRING_KEYS_WITH_SAME_NAME_ERROR, ["Map has atom and string keys with same name"], record_name: record_name, key: attribute)
             else
               value_from_atom_key || value_from_string_key
             end
