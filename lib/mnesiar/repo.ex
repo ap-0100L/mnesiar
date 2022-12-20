@@ -36,7 +36,7 @@ defmodule Mnesiar.Repo do
           {:ok, :CODE_IN_MEMMORY_DB_STOPPING}
 
         unexpected ->
-          UniError.raise_error!(:CODE_STATE_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected)
+          UniError.raise_error!(:CODE_STATE_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
       end
   end
 
@@ -84,13 +84,13 @@ defmodule Mnesiar.Repo do
           {result, it_took_time}
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_CAN_NOT_START_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_CAN_NOT_START_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_CAN_NOT_START_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_CAN_NOT_START_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason)
 
         unexpected ->
-          UniError.raise_error!(:CODE_CAN_NOT_START_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected)
+          UniError.raise_error!(:CODE_CAN_NOT_START_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
       end
 
     Logger.info("[#{inspect(__MODULE__)}][#{inspect(__ENV__.function)}] In-memory DB successfully started, it took time #{it_took_time / 1_000_000}ms")
@@ -138,13 +138,13 @@ defmodule Mnesiar.Repo do
           {result, it_took_time}
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_CAN_NOT_STOP_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_CAN_NOT_STOP_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_CAN_NOT_STOP_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_CAN_NOT_STOP_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason)
 
         unexpected ->
-          UniError.raise_error!(:CODE_CAN_NOT_STOP_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected)
+          UniError.raise_error!(:CODE_CAN_NOT_STOP_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
       end
 
     Logger.info("[#{inspect(__MODULE__)}][#{inspect(__ENV__.function)}] In-memory DB successfully stopped, it took time #{it_took_time / 1_000_000}ms")
@@ -200,13 +200,13 @@ defmodule Mnesiar.Repo do
           {:ok, result}
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_CHANGE_CONFIG_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_CHANGE_CONFIG_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_CHANGE_CONFIG_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_CHANGE_CONFIG_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason)
 
         unexpected ->
-          UniError.raise_error!(:CODE_CHANGE_CONFIG_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected)
+          UniError.raise_error!(:CODE_CHANGE_CONFIG_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
       end
 
     result
@@ -230,13 +230,13 @@ defmodule Mnesiar.Repo do
           UniError.raise_error!(:CODE_SCHEMA_ALREADY_EXISTS_ERROR, ["Error occurred while process operation in-memory DB"], node: node)
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_CREATE_SCHEMA_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_CREATE_SCHEMA_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_CREATE_SCHEMA_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_CREATE_SCHEMA_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason)
 
         unexpected ->
-          UniError.raise_error!(:CODE_CREATE_SCHEMA_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected)
+          UniError.raise_error!(:CODE_CREATE_SCHEMA_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
       end
 
     Logger.info("[#{Node.self()}] In-memory DB schema created on nodes #{inspect(nodes)} successfully")
@@ -257,10 +257,10 @@ defmodule Mnesiar.Repo do
           value
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_TABLE_INFO_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason, key: key)
+          UniError.raise_error!(:CODE_TABLE_INFO_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason, key: key)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_TABLE_INFO_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason, key: key)
+          UniError.raise_error!(:CODE_TABLE_INFO_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason, key: key)
       end
 
     {:ok, result}
@@ -299,13 +299,13 @@ defmodule Mnesiar.Repo do
                 :ok
 
               {:error, reason} ->
-                UniError.raise_error!(:CODE_ADD_TABLE_INDEX_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason, table_name: table, index_field: item)
+                UniError.raise_error!(:CODE_ADD_TABLE_INDEX_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason, table_name: table, index_field: item)
 
               {:aborted, reason} ->
-                UniError.raise_error!(:CODE_ADD_TABLE_INDEX_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason, table_name: table, index_field: item)
+                UniError.raise_error!(:CODE_ADD_TABLE_INDEX_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason, table_name: table, index_field: item)
 
               unexpected ->
-                UniError.raise_error!(:CODE_ADD_TABLE_INDEX_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected, table_name: table, index_field: item)
+                UniError.raise_error!(:CODE_ADD_TABLE_INDEX_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected, table_name: table, index_field: item)
             end
           end
 
@@ -315,13 +315,13 @@ defmodule Mnesiar.Repo do
           UniError.raise_error!(:CODE_TABLE_ALREADY_EXISTS_ERROR, ["Error occurred while process operation in-memory DB"], table_name: table)
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_CREATE_TABLE_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason, table_name: table)
+          UniError.raise_error!(:CODE_CREATE_TABLE_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason, table_name: table)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_CREATE_TABLE_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason, table_name: table)
+          UniError.raise_error!(:CODE_CREATE_TABLE_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason, table_name: table)
 
         unexpected ->
-          UniError.raise_error!(:CODE_CREATE_TABLE_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected, table_name: table)
+          UniError.raise_error!(:CODE_CREATE_TABLE_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected, table_name: table)
       end
 
     Logger.info("[#{inspect(__MODULE__)}][#{inspect(__ENV__.function)}] Table #{table} with indexes #{inspect(indexes)} created successfully.")
@@ -437,13 +437,13 @@ defmodule Mnesiar.Repo do
           :ok
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_SET_MASTER_NODES_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason, table_name: table, nodes: nodes)
+          UniError.raise_error!(:CODE_SET_MASTER_NODES_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason, table_name: table, nodes: nodes)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_SET_MASTER_NODES_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason, table_name: table, nodes: nodes)
+          UniError.raise_error!(:CODE_SET_MASTER_NODES_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason, table_name: table, nodes: nodes)
 
         unexpected ->
-          UniError.raise_error!(:CODE_SET_MASTER_NODES_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected, table_name: table, nodes: nodes)
+          UniError.raise_error!(:CODE_SET_MASTER_NODES_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected, table_name: table, nodes: nodes)
       end
 
     Logger.info("[#{inspect(__MODULE__)}][#{inspect(__ENV__.function)}] Master nodes #{inspect(nodes)} for table #{table} were set successfully.")
@@ -465,14 +465,13 @@ defmodule Mnesiar.Repo do
           {:ok, table_name} = apply(module, :get_table_name, [])
 
           result =
-            catch_error!(
+            UniError.rescue_error!(
               set_master_nodes!(table_name, master_nodes),
               false
             )
 
           result =
             case result do
-              {:error, _code, _data, _messages} = e -> e
               :ok -> :ok
               _ -> result
             end
@@ -501,10 +500,10 @@ defmodule Mnesiar.Repo do
           value
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_SYSTEM_INFO_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason, key: key)
+          UniError.raise_error!(:CODE_SYSTEM_INFO_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason, key: key)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_SYSTEM_INFO_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason, key: key)
+          UniError.raise_error!(:CODE_SYSTEM_INFO_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason, key: key)
       end
 
     {:ok, result}
@@ -530,13 +529,13 @@ defmodule Mnesiar.Repo do
           :ok
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_WAIT_FOR_TABLES_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_WAIT_FOR_TABLES_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_WAIT_FOR_TABLES_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_WAIT_FOR_TABLES_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason)
 
         unexpected ->
-          UniError.raise_error!(:CODE_WAIT_FOR_TABLES_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected)
+          UniError.raise_error!(:CODE_WAIT_FOR_TABLES_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
       end
 
     Logger.info("[#{inspect(__MODULE__)}][#{inspect(__ENV__.function)}] I waited for the tables #{inspect(tables)}, it took #{it_took_time / 1_000_000}ms")
@@ -568,13 +567,13 @@ defmodule Mnesiar.Repo do
           UniError.raise_error!(:CODE_ADD_TABLE_COPY_IN_MEMORY_DB_ALREADY_EXISTS_ERROR, ["Error occurred while process operation in-memory DB"], table_name: table_name, node: ret_node, storage_type: storage_type)
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_ADD_TABLE_COPY_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason, table_name: table, storage_type: storage_type)
+          UniError.raise_error!(:CODE_ADD_TABLE_COPY_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason, table_name: table, storage_type: storage_type)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_ADD_TABLE_COPY_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason, table_name: table, storage_type: storage_type)
+          UniError.raise_error!(:CODE_ADD_TABLE_COPY_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason, table_name: table, storage_type: storage_type)
 
         unexpected ->
-          UniError.raise_error!(:CODE_ADD_TABLE_COPY_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected, table_name: table, storage_type: storage_type)
+          UniError.raise_error!(:CODE_ADD_TABLE_COPY_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected, table_name: table, storage_type: storage_type)
       end
   end
 
@@ -627,13 +626,13 @@ defmodule Mnesiar.Repo do
           UniError.raise_error!(:CODE_CHANGE_TABLE_COPY_STORAGE_TYPE_IN_MEMORY_DB_ALREADY_EXISTS_ERROR, ["Error occurred while process operation in-memory DB"], table_name: table, storage_type: storage_type)
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_CHANGE_TABLE_COPY_STORAGE_TYPE_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason, table_name: table, storage_type: storage_type)
+          UniError.raise_error!(:CODE_CHANGE_TABLE_COPY_STORAGE_TYPE_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason, table_name: table, storage_type: storage_type)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_CHANGE_TABLE_COPY_STORAGE_TYPE_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason, table_name: table, storage_type: storage_type)
+          UniError.raise_error!(:CODE_CHANGE_TABLE_COPY_STORAGE_TYPE_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason, table_name: table, storage_type: storage_type)
 
         unexpected ->
-          UniError.raise_error!(:CODE_CHANGE_TABLE_COPY_STORAGE_TYPE_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected, table_name: table, storage_type: storage_type)
+          UniError.raise_error!(:CODE_CHANGE_TABLE_COPY_STORAGE_TYPE_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected, table_name: table, storage_type: storage_type)
       end
 
     result
@@ -652,13 +651,13 @@ defmodule Mnesiar.Repo do
           :ok
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_SAVE_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_SAVE_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_SAVE_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_SAVE_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason)
 
         unexpected ->
-          UniError.raise_error!(:CODE_SAVE_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected)
+          UniError.raise_error!(:CODE_SAVE_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
       end
 
     result
@@ -680,13 +679,13 @@ defmodule Mnesiar.Repo do
           {:ok, obj}
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_GET_BY_ID_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_GET_BY_ID_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_GET_BY_ID_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_GET_BY_ID_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason)
 
         unexpected ->
-          UniError.raise_error!(:CODE_GET_BY_ID_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected)
+          UniError.raise_error!(:CODE_GET_BY_ID_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
       end
 
     result
@@ -717,13 +716,13 @@ defmodule Mnesiar.Repo do
           {:ok, obj}
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_READ_ALL_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_READ_ALL_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_READ_ALL_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_READ_ALL_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason)
 
         unexpected ->
-          UniError.raise_error!(:CODE_READ_ALL_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected)
+          UniError.raise_error!(:CODE_READ_ALL_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
       end
 
     result
@@ -742,13 +741,13 @@ defmodule Mnesiar.Repo do
           :ok
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_DELETE_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_DELETE_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_DELETE_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_DELETE_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason)
 
         unexpected ->
-          UniError.raise_error!(:CODE_DELETE_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected)
+          UniError.raise_error!(:CODE_DELETE_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
       end
 
     result
@@ -767,13 +766,13 @@ defmodule Mnesiar.Repo do
           :ok
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_DELETE_OBJECT_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_DELETE_OBJECT_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_DELETE_OBJECT_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_DELETE_OBJECT_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason)
 
         unexpected ->
-          UniError.raise_error!(:CODE_DELETE_OBJECT_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected)
+          UniError.raise_error!(:CODE_DELETE_OBJECT_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
       end
 
     result
@@ -828,13 +827,13 @@ defmodule Mnesiar.Repo do
           {:ok, result}
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_FIND_WITH_MATCH_OBJECT_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_FIND_WITH_MATCH_OBJECT_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_FIND_WITH_MATCH_OBJECT_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_FIND_WITH_MATCH_OBJECT_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason)
 
         unexpected ->
-          UniError.raise_error!(:CODE_FIND_WITH_MATCH_OBJECT_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected)
+          UniError.raise_error!(:CODE_FIND_WITH_MATCH_OBJECT_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
       end
 
     result
@@ -856,13 +855,13 @@ defmodule Mnesiar.Repo do
           {:ok, result}
 
         {:error, reason} ->
-          UniError.raise_error!(:CODE_FIND_WITH_INDEX_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_FIND_WITH_INDEX_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason)
 
         {:aborted, reason} ->
-          UniError.raise_error!(:CODE_FIND_WITH_INDEX_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], reason: reason)
+          UniError.raise_error!(:CODE_FIND_WITH_INDEX_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason)
 
         unexpected ->
-          UniError.raise_error!(:CODE_FIND_WITH_INDEX_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], reason: unexpected)
+          UniError.raise_error!(:CODE_FIND_WITH_INDEX_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
       end
 
     result

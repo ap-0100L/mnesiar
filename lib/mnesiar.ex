@@ -38,7 +38,7 @@ defmodule Mnesiar do
   @impl true
   def init(%{wait_for_start_timeout: wait_for_start_timeout, creator_node: creator_node, entities: entities} = state) do
     state =
-      catch_error!(
+      UniError.rescue_error!(
         (
           mode = state[:mode]
           Logger.info("[#{inspect(SelfModule)}][#{inspect(__ENV__.function)}] Mode #{inspect(mode)}")
@@ -62,7 +62,7 @@ defmodule Mnesiar do
                 state
 
               unexpected ->
-                UniError.raise_error!(:CODE_UNKNOWN_SERVER_MODE_ERROR, ["Unknown server mode"], reason: unexpected)
+                UniError.raise_error!(:CODE_UNKNOWN_SERVER_MODE_ERROR, ["Unknown server mode"], previous: unexpected)
             end
 
           :ok = Repo.start!(wait_for_start_timeout)
@@ -154,7 +154,7 @@ defmodule Mnesiar do
   @impl true
   def handle_info({:nodeup, node}, %{entities: entities, mode: mode, leader_node: leader_node, cookie: local_cookie} = state) do
     state =
-      catch_error!(
+      UniError.rescue_error!(
         (
           Logger.info("[#{inspect(SelfModule)}][#{inspect(__ENV__.function)}] Mode #{inspect(mode)}; action :nodeup")
 
@@ -171,7 +171,7 @@ defmodule Mnesiar do
                 Logger.info("[#{inspect(SelfModule)}][#{inspect(__ENV__.function)}] I am Mnesiar leader node, got node #{inspect(node)}")
 
                 result =
-                  catch_error!(
+                  UniError.rescue_error!(
                     (
                       {:ok, remote_cookie} = RPCUtils.call_rpc!(node, Mnesiar, :get_cookie, [])
 
@@ -187,7 +187,7 @@ defmodule Mnesiar do
                 cluster_member =
                   case result do
                     {:ok, result} -> result
-                    {:error, _code, _data, _messages} -> false
+                    _ -> false
                   end
 
                 if cluster_member do
@@ -211,7 +211,7 @@ defmodule Mnesiar do
               state
 
             unexpected ->
-              UniError.raise_error!(:CODE_UNKNOWN_SERVER_MODE_ERROR, ["Unknown server mode"], reason: unexpected)
+              UniError.raise_error!(:CODE_UNKNOWN_SERVER_MODE_ERROR, ["Unknown server mode"], previous: unexpected)
           end
         )
       )
@@ -222,7 +222,7 @@ defmodule Mnesiar do
   @impl true
   def handle_info({:nodedown, node}, state) do
     state =
-      catch_error!(
+      UniError.rescue_error!(
         (
           mode = state[:mode]
 
@@ -241,7 +241,7 @@ defmodule Mnesiar do
               state
 
             unexpected ->
-              UniError.raise_error!(:CODE_UNKNOWN_SERVER_MODE_ERROR, ["Unknown server mode"], reason: unexpected)
+              UniError.raise_error!(:CODE_UNKNOWN_SERVER_MODE_ERROR, ["Unknown server mode"], previous: unexpected)
           end
         )
       )
@@ -705,7 +705,7 @@ defmodule Mnesiar do
       unexpected ->
         UniError.raise_error!(:CODE_UNKNOWN_IN_MEMORY_DB_SERVER_MODE_ERROR, ["Unknown in-memory DB server mode"],
           node: node,
-          reason: unexpected
+          previous: unexpected
         )
     end
 
