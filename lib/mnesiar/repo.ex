@@ -253,14 +253,14 @@ defmodule Mnesiar.Repo do
 
     result =
       case result do
-        value ->
-          value
-
         {:error, reason} ->
           UniError.raise_error!(:CODE_TABLE_INFO_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason, key: key)
 
         {:aborted, reason} ->
           UniError.raise_error!(:CODE_TABLE_INFO_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason, key: key)
+
+        value ->
+          value
       end
 
     {:ok, result}
@@ -496,14 +496,14 @@ defmodule Mnesiar.Repo do
 
     result =
       case result do
-        value ->
-          value
-
         {:error, reason} ->
           UniError.raise_error!(:CODE_SYSTEM_INFO_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason, key: key)
 
         {:aborted, reason} ->
           UniError.raise_error!(:CODE_SYSTEM_INFO_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason, key: key)
+
+        value ->
+          value
       end
 
     {:ok, result}
