@@ -1284,7 +1284,34 @@ defmodule Mnesiar.Repo do
 
       """
       def find_with_index!(index, value) do
-        MnesiarRepo.find_with_index!(@table_name, index, value)
+        result = MnesiarRepo.find_with_index!(@table_name, index, value)
+
+        # TODO: Please, try to use COND instead IF
+        result =
+          if result == {:ok, :CODE_NOTHING_FOUND} do
+            if is_nil(@persistent_schema) do
+              result
+            else
+              SelfModule.get_persistent!([{index, value}])
+            end
+          else
+            {:ok, cached_data_ttl} = StateUtils.get_state!(SelfModule, :cached_data_ttl)
+            now = System.system_time(:second)
+            {:ok, item} = result
+
+            {:ok, timestamp} = SelfModule.get!(item, :timestamp)
+            {:ok, id} = SelfModule.get!(item, :id)
+
+            if is_nil(cached_data_ttl) do
+              result
+            else
+              if now - timestamp > cached_data_ttl and not is_nil(@persistent_schema) do
+                SelfModule.get_persistent!(id: id)
+              else
+                result
+              end
+            end
+          end
       end
 
       ##############################################################################
