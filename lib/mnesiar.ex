@@ -25,7 +25,7 @@ defmodule Mnesiar do
 
   ##############################################################################
   @doc """
-
+  # Function
   """
   def start_link(config: config, opts: opts) do
     GenServer.start_link(SelfModule, config, Keyword.put(opts, :name, SelfModule))
@@ -33,7 +33,7 @@ defmodule Mnesiar do
 
   ##############################################################################
   @doc """
-
+  # Function
   """
   @impl true
   def init(%{wait_for_start_timeout: wait_for_start_timeout, creator_node: creator_node, entities: entities} = state) do
@@ -93,7 +93,7 @@ defmodule Mnesiar do
 
   ##############################################################################
   @doc """
-
+  # Function
   """
   @impl true
   def handle_call(:get_cookie, _from, state) do
@@ -149,7 +149,7 @@ defmodule Mnesiar do
 
   ##############################################################################
   @doc """
-
+  # Function
   """
   @impl true
   def handle_info({:nodeup, node}, %{entities: entities, mode: mode, leader_node: leader_node, cookie: local_cookie} = state) do
@@ -522,7 +522,7 @@ defmodule Mnesiar do
 
   ##############################################################################
   @doc """
-
+  # Function
   """
   def start!() do
     GenServer.call(SelfModule, :start!)
@@ -530,7 +530,7 @@ defmodule Mnesiar do
 
   ##############################################################################
   @doc """
-
+  # Function
   """
   def set_state!(new_state) do
     # GenServer.cast(SelfModule, {:set_state!, new_state})
@@ -539,7 +539,7 @@ defmodule Mnesiar do
 
   ##############################################################################
   @doc """
-
+  # Function
   """
   def get_cookie() do
     GenServer.call(SelfModule, :get_cookie)
@@ -547,7 +547,7 @@ defmodule Mnesiar do
 
   ##############################################################################
   @doc """
-
+  # Function
   """
   def get_state() do
     GenServer.call(SelfModule, :get_state)
@@ -555,7 +555,7 @@ defmodule Mnesiar do
 
   ##############################################################################
   @doc """
-
+  # Function
   """
   def info!() do
     {:ok, state} = get_state()
@@ -583,7 +583,7 @@ defmodule Mnesiar do
 
   ##############################################################################
   @doc """
-
+  # Function
   """
   def get_config!(config \\ nil)
 
