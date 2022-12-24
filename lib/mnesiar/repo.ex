@@ -1201,41 +1201,6 @@ defmodule Mnesiar.Repo do
         MnesiarRepo.delete!(@table_name, id)
       end
 
-      ###########################################################################
-      @doc """
-      ### Function
-      """
-      @impl true
-      def get_persistent!(id: id) do
-        if is_nil(@persistent_schema) do
-          UniError.raise_error!(:CODE_PERSISTENT_SCHEMA_IS_NIL_MNESIAR_ERROR, ["Persistent schema is nil"], mnesiar_repo: SelfModule)
-        end
-
-        query =
-          from(
-            o in @persistent_schema,
-            where: o.id == ^id,
-            limit: 1,
-            select: o
-          )
-
-        opts = []
-        result = @persistent_schema.get_by_query!(query, opts)
-
-        if result == {:ok, :CODE_NOTHING_FOUND} do
-          result
-        else
-          {:ok, [item]} = result
-          item = Map.from_struct(item)
-
-          {:ok, item} = SelfModule.map_to_record(item)
-          {:ok, item} = SelfModule.prepare!(item)
-          SelfModule.save!(item)
-
-          {:ok, item}
-        end
-      end
-
       ##############################################################################
       @doc """
 
@@ -1292,7 +1257,7 @@ defmodule Mnesiar.Repo do
             if is_nil(@persistent_schema) do
               result
             else
-              SelfModule.get_persistent!([{index, value}])
+              SelfModule.get_persistent!([{index, :eq, value}])
             end
           else
             {:ok, cached_data_ttl} = StateUtils.get_state!(SelfModule, :cached_data_ttl)
