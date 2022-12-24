@@ -16,7 +16,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def state!() do
     result = Mnesia.system_info(:is_running)
@@ -42,7 +42,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def wait_for_start!({:ok, :CODE_IN_MEMMORY_DB_STARTED}, _count) do
     :ok
@@ -67,7 +67,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def start!(wait_for_start_timeout)
       when is_nil(wait_for_start_timeout) or not is_number(wait_for_start_timeout),
@@ -100,7 +100,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def wait_for_stop!({:ok, :CODE_IN_MEMMORY_DB_STOPPED}, _count) do
     :ok
@@ -125,7 +125,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def stop!(wait_for_stop_timeout) do
     Logger.info("[#{inspect(__MODULE__)}][#{inspect(__ENV__.function)}] I will try stop in-memory DB and wait #{inspect(wait_for_stop_timeout)}s")
@@ -154,7 +154,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def change_extra_db_nodes!(nodes) do
     {:ok, extra_nodes} = change_config!(:extra_db_nodes, nodes)
@@ -214,7 +214,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def create_schema!(create_schema_timeout, nodes) do
     Logger.info("[#{Node.self()}] I will try create schema in in-memory DB on nodes #{inspect(nodes)}")
@@ -268,7 +268,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def create_table!(table, opts, indexes \\ [])
 
@@ -331,7 +331,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def ensure_tables_exists!(entities)
       when is_nil(entities) or not is_list(entities),
@@ -358,7 +358,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def init_table_states!(entities)
       when is_nil(entities) or not is_list(entities),
@@ -382,7 +382,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def set_table_states!(entities)
       when is_nil(entities) or not is_list(entities),
@@ -406,7 +406,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def ensure_db_is_empty!() do
     {:ok, local_tables} = system_info!(:local_tables)
@@ -416,7 +416,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def set_master_nodes!(table, nodes)
       when is_nil(table) or is_nil(nodes) or not is_list(nodes) or not is_atom(table),
@@ -485,7 +485,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def system_info!(option)
       when is_nil(option) or not is_atom(option),
@@ -511,7 +511,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def wait_for_tables!(tables, wait_for_tables_timeout)
       when is_nil(tables) or is_nil(wait_for_tables_timeout) or not is_list(tables) or
@@ -545,7 +545,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def add_table_copy_of_storage_type!(table, node, storage_type)
       when is_nil(table) or is_nil(node) or is_nil(storage_type) or not is_atom(table) or
@@ -579,7 +579,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def change_table_copy_storage_type!(table, node, storage_type)
       when is_nil(table) or is_nil(node) or is_nil(storage_type) or not is_atom(table) or
@@ -693,7 +693,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def read_all!(table) do
     result =
@@ -841,7 +841,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def find_with_index!(table, index, value) do
     result = Mnesia.transaction(fn -> Mnesia.index_read(table, value, index) end)
@@ -869,7 +869,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def get_table_opts(
         record_name,
@@ -919,7 +919,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   defp find_index([k | _], k, i), do: i
   defp find_index([_ | t], k, i), do: find_index(t, k, i + 1)
@@ -945,7 +945,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def record_to_map(attributes, record) do
     result =
@@ -963,7 +963,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   def map_to_record(attributes, record_name, map) do
     result =
@@ -1003,7 +1003,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   @callback load() :: term
   @callback get_by_id!(id :: any) :: term
@@ -1015,7 +1015,7 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  # Function
+  ## Function
   """
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
@@ -1148,7 +1148,7 @@ defmodule Mnesiar.Repo do
 
       ###########################################################################
       @doc """
-
+      ### Function
       """
       def save_persistent!(o, async \\ false, rescue_func \\ nil, rescue_func_args \\ [], module \\ nil)
 
@@ -1203,7 +1203,7 @@ defmodule Mnesiar.Repo do
 
       ###########################################################################
       @doc """
-
+      ### Function
       """
       @impl true
       def get_persistent!(id: id) do
