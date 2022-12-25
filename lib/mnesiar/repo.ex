@@ -1150,8 +1150,10 @@ defmodule Mnesiar.Repo do
       @doc """
       ### Function
       """
+      @impl
       def save_persistent!(o, async \\ false, rescue_func \\ nil, rescue_func_args \\ [], module \\ nil)
 
+      @impl
       def save_persistent!(o, async, rescue_func, rescue_func_args, module) do
         if is_nil(@persistent_schema) do
           UniError.raise_error!(:CODE_PERSISTENT_SCHEMA_IS_NIL_MNESIAR_ERROR, ["Persistent schema is nil"], mnesiar_repo: SelfModule)
