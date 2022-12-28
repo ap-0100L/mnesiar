@@ -603,7 +603,7 @@ defmodule Mnesiar do
 
     {:ok, entities} = raise_if_empty!(config, :entities, :list, "Wrong entities value")
 
-    {:ok, wait_for_tables_timeout} = raise_if_empty!(config, :wait_for_tables_timeout, :integer, "Wrong entities value")
+    {:ok, wait_for_tables_timeout} = raise_if_empty!(config, :wait_for_tables_timeout, :integer, "Wrong wait_for_tables_timeout value")
 
     leader_node = config[:leader_node]
     creator_node = config[:creator_node]
