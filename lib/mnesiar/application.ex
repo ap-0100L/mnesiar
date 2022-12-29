@@ -27,8 +27,6 @@ defmodule Mnesiar.Application do
   # get_children!
   """
   defp get_children! do
-    {:ok, config} = Mnesiar.get_config!()
-
     result = []
 
     {:ok, result}
