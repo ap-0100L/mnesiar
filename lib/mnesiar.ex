@@ -693,7 +693,9 @@ defmodule Mnesiar do
         if (remote_access_only_node_name_prefixes == :all and (not schema_disc_copies_is_empty or not schema_disc_copies_is_empty)) or
              (schema_ram_copies_node_name_prefixes == :all and (not remote_access_only_is_empty or not schema_disc_copies_is_empty)) or
              (schema_disc_copies_node_name_prefixes == :all and (not remote_access_only_is_empty or not schema_ram_copies_is_empty)) do
-          UniError.raise_error!(:CODE_CONFLICT_SCHEMA_NODE_NAME_PREFIXES_ERROR, ["If one of remote_access_only_node_name_prefixes, schema_ram_copies_node_name_prefixes, schema_disc_copies_node_name_prefixes is :all, other schema_*_node_name_prefixes must be []"],
+          UniError.raise_error!(
+            :CODE_CONFLICT_SCHEMA_NODE_NAME_PREFIXES_ERROR,
+            ["If one of remote_access_only_node_name_prefixes, schema_ram_copies_node_name_prefixes, schema_disc_copies_node_name_prefixes is :all, other schema_*_node_name_prefixes must be []"],
             remote_access_only_node_name_prefixes: remote_access_only_node_name_prefixes,
             schema_ram_copies_node_name_prefixes: schema_ram_copies_node_name_prefixes,
             schema_disc_copies_node_name_prefixes: schema_disc_copies_node_name_prefixes
