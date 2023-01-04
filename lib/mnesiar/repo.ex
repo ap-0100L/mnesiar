@@ -1039,7 +1039,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       defrecord(
         @record_name,
@@ -1051,7 +1051,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       def get_table_name() do
         {:ok, @table_name}
@@ -1059,7 +1059,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       def get_table_opts(
             disc_copies_nodes \\ nil,
@@ -1080,7 +1080,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       def get!(record, key) do
         MnesiarRepo.get!(@attributes, record, key)
@@ -1088,7 +1088,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       def put!(record, key, value) do
         MnesiarRepo.put!(@attributes, record, key, value)
@@ -1096,7 +1096,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       def record_to_map(record) do
         MnesiarRepo.record_to_map(@attributes, record)
@@ -1104,7 +1104,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       def map_to_record(map) do
         MnesiarRepo.map_to_record(@attributes, @record_name, map)
@@ -1112,7 +1112,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       def create_table!(
             disc_copies_nodes \\ nil,
@@ -1132,7 +1132,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       def add_table_copy_of_storage_type!(node, type) do
         MnesiarRepo.add_table_copy_of_storage_type!(@table_name, node, type)
@@ -1140,7 +1140,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       def change_tables_copies_type!(node, type) do
         MnesiarRepo.change_table_copy_storage_type!(@table_name, node, type)
@@ -1172,7 +1172,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       def save!(o) do
         now = System.system_time(:second)
@@ -1183,7 +1183,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       def save!(o, async, rescue_func \\ nil, rescue_func_args \\ [], module \\ nil)
 
@@ -1197,7 +1197,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       def delete!(id) do
         MnesiarRepo.delete!(@table_name, id)
@@ -1205,7 +1205,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       @impl true
       def get_by_id!(id) do
@@ -1240,7 +1240,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       def read_all!() do
         MnesiarRepo.read_all!(@table_name)
@@ -1248,7 +1248,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       def find_with_index!(index, value) do
         result = MnesiarRepo.find_with_index!(@table_name, index, value)
@@ -1283,7 +1283,7 @@ defmodule Mnesiar.Repo do
 
       ##############################################################################
       @doc """
-
+      ### Function
       """
       def find_with_match_object!(pattern \\ {:_})
 

@@ -4,8 +4,6 @@
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `mnesiar` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
@@ -13,6 +11,23 @@ def deps do
     {:mnesiar, "~> 0.1.0"}
   ]
 end
+```
+
+```elixir
+  ##############################################################################
+  @doc """
+  # get_children!
+  """
+  defp get_children! do
+    {:ok, config} = Mnesiar.get_config!()
+
+    result = [
+      {Mnesiar, [config: config, opts: []]},
+    ]
+
+    {:ok, result}
+  end
+
 ```
 
 ## Config example
@@ -167,7 +182,4 @@ if config_env() in [:prod] do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/mnesiar>.
 
