@@ -262,7 +262,7 @@ defmodule Mnesiar do
     node = Node.self()
 
     :ok = Repo.stop!(wait_for_stop_timeout)
-    :ok = Repo.create_schema!(wait_for_tables_timeout, [node])
+    :ok = Repo.create_schema!([node])
     :ok = Repo.start!(wait_for_start_timeout)
 
     schema_ram_copies_nodes =
@@ -346,7 +346,7 @@ defmodule Mnesiar do
       is_load_exported = Kernel.function_exported?(module, :load, 0)
 
       if is_load_exported do
-        {:ok, table_name} = module.get_table_name()
+        {:ok, table_name} = apply(module, :get_table_name, [])
 
         Logger.info("[#{inspect(SelfModule)}][#{inspect(__ENV__.function)}] I will load data to table #{table_name} (module #{module}) in in-memory DB")
 

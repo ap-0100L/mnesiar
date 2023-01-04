@@ -21,23 +21,22 @@ defmodule Mnesiar.Repo do
   def state!() do
     result = Mnesia.system_info(:is_running)
 
-    result =
-      case result do
-        :yes ->
-          {:ok, :CODE_IN_MEMMORY_DB_STARTED}
+    case result do
+      :yes ->
+        {:ok, :CODE_IN_MEMMORY_DB_STARTED}
 
-        :no ->
-          {:ok, :CODE_IN_MEMMORY_DB_STOPPED}
+      :no ->
+        {:ok, :CODE_IN_MEMMORY_DB_STOPPED}
 
-        :starting ->
-          {:ok, :CODE_IN_MEMMORY_DB_STARTING}
+      :starting ->
+        {:ok, :CODE_IN_MEMMORY_DB_STARTING}
 
-        :stopping ->
-          {:ok, :CODE_IN_MEMMORY_DB_STOPPING}
+      :stopping ->
+        {:ok, :CODE_IN_MEMMORY_DB_STOPPING}
 
-        unexpected ->
-          UniError.raise_error!(:CODE_STATE_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
-      end
+      unexpected ->
+        UniError.raise_error!(:CODE_STATE_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
+    end
   end
 
   ##############################################################################
@@ -216,28 +215,27 @@ defmodule Mnesiar.Repo do
   @doc """
   ## Function
   """
-  def create_schema!(create_schema_timeout, nodes) do
+  def create_schema!(nodes) do
     Logger.info("[#{Node.self()}] I will try create schema in in-memory DB on nodes #{inspect(nodes)}")
 
     result = Mnesia.create_schema(nodes)
 
-    result =
-      case result do
-        :ok ->
-          :ok
+    case result do
+      :ok ->
+        :ok
 
-        {:error, {_node, {:already_exists, node}}} ->
-          UniError.raise_error!(:CODE_SCHEMA_ALREADY_EXISTS_ERROR, ["Error occurred while process operation in-memory DB"], node: node)
+      {:error, {_node, {:already_exists, node}}} ->
+        UniError.raise_error!(:CODE_SCHEMA_ALREADY_EXISTS_ERROR, ["Error occurred while process operation in-memory DB"], node: node)
 
-        {:error, reason} ->
-          UniError.raise_error!(:CODE_CREATE_SCHEMA_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason)
+      {:error, reason} ->
+        UniError.raise_error!(:CODE_CREATE_SCHEMA_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason)
 
-        {:aborted, reason} ->
-          UniError.raise_error!(:CODE_CREATE_SCHEMA_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason)
+      {:aborted, reason} ->
+        UniError.raise_error!(:CODE_CREATE_SCHEMA_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason)
 
-        unexpected ->
-          UniError.raise_error!(:CODE_CREATE_SCHEMA_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
-      end
+      unexpected ->
+        UniError.raise_error!(:CODE_CREATE_SCHEMA_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected)
+    end
 
     Logger.info("[#{Node.self()}] In-memory DB schema created on nodes #{inspect(nodes)} successfully")
 
@@ -290,7 +288,7 @@ defmodule Mnesiar.Repo do
       case result do
         value when value in [:ok, {:atomic, :ok}] ->
           for item <- indexes do
-            result = raise_if_empty!(item, :atom, "Wrong index value")
+            raise_if_empty!(item, :atom, "Wrong index value")
 
             result = Mnesia.add_table_index(table, item)
 
@@ -311,7 +309,7 @@ defmodule Mnesiar.Repo do
 
           :ok
 
-        {:aborted, {:already_exists, table_name}} ->
+        {:aborted, {:already_exists, _table_name}} ->
           UniError.raise_error!(:CODE_TABLE_ALREADY_EXISTS_ERROR, ["Error occurred while process operation in-memory DB"], table_name: table)
 
         {:error, reason} ->
@@ -373,7 +371,7 @@ defmodule Mnesiar.Repo do
 
         et = Map.put(et, :table_name, table_name)
 
-        {:ok, pid} = StateUtils.init_state!(module, et)
+        {:ok, _pid} = StateUtils.init_state!(module, et)
       end
     )
 
@@ -556,25 +554,24 @@ defmodule Mnesiar.Repo do
   def add_table_copy_of_storage_type!(table, node, storage_type) do
     result = Mnesia.add_table_copy(table, node, storage_type)
 
-    result =
-      case result do
-        value when value in [:ok, {:atomic, :ok}] ->
-          Logger.info("[#{inspect(__MODULE__)}][#{inspect(__ENV__.function)}] Table #{inspect(table)} with storage_type #{inspect(storage_type)} on node #{inspect(node)} added successfully")
+    case result do
+      value when value in [:ok, {:atomic, :ok}] ->
+        Logger.info("[#{inspect(__MODULE__)}][#{inspect(__ENV__.function)}] Table #{inspect(table)} with storage_type #{inspect(storage_type)} on node #{inspect(node)} added successfully")
 
-          :ok
+        :ok
 
-        {:aborted, {:already_exists, table_name, ret_node}} ->
-          UniError.raise_error!(:CODE_ADD_TABLE_COPY_IN_MEMORY_DB_ALREADY_EXISTS_ERROR, ["Error occurred while process operation in-memory DB"], table_name: table_name, node: ret_node, storage_type: storage_type)
+      {:aborted, {:already_exists, table_name, ret_node}} ->
+        UniError.raise_error!(:CODE_ADD_TABLE_COPY_IN_MEMORY_DB_ALREADY_EXISTS_ERROR, ["Error occurred while process operation in-memory DB"], table_name: table_name, node: ret_node, storage_type: storage_type)
 
-        {:error, reason} ->
-          UniError.raise_error!(:CODE_ADD_TABLE_COPY_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason, table_name: table, storage_type: storage_type)
+      {:error, reason} ->
+        UniError.raise_error!(:CODE_ADD_TABLE_COPY_IN_MEMORY_DB_ERROR, ["Error occurred while process operation in-memory DB"], previous: reason, table_name: table, storage_type: storage_type)
 
-        {:aborted, reason} ->
-          UniError.raise_error!(:CODE_ADD_TABLE_COPY_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason, table_name: table, storage_type: storage_type)
+      {:aborted, reason} ->
+        UniError.raise_error!(:CODE_ADD_TABLE_COPY_IN_MEMORY_DB_ABORTED_ERROR, ["Aborted occurred while process operation in-memory DB"], previous: reason, table_name: table, storage_type: storage_type)
 
-        unexpected ->
-          UniError.raise_error!(:CODE_ADD_TABLE_COPY_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected, table_name: table, storage_type: storage_type)
-      end
+      unexpected ->
+        UniError.raise_error!(:CODE_ADD_TABLE_COPY_IN_MEMORY_DB_UNEXPECTED_ERROR, ["Unexpected error occurred while process operation in-memory DB"], previous: unexpected, table_name: table, storage_type: storage_type)
+    end
   end
 
   ##############################################################################
@@ -622,7 +619,7 @@ defmodule Mnesiar.Repo do
           Logger.info("[#{inspect(__MODULE__)}][#{inspect(__ENV__.function)}] Table #{inspect(table)} already storage_type #{inspect(storage_type)} on node #{inspect(node)}")
           :ok
 
-        {:aborted, {:already_exists, table_name, ret_node, ret_type}} ->
+        {:aborted, {:already_exists, _table_name, _ret_node, _ret_type}} ->
           UniError.raise_error!(:CODE_CHANGE_TABLE_COPY_STORAGE_TYPE_IN_MEMORY_DB_ALREADY_EXISTS_ERROR, ["Error occurred while process operation in-memory DB"], table_name: table, storage_type: storage_type)
 
         {:error, reason} ->
@@ -789,15 +786,14 @@ defmodule Mnesiar.Repo do
   def delete_object_list!(table, list) do
     count =
       if length(list) > 0 do
-        result =
-          Enum.reduce(
-            list,
-            0,
-            fn item, accum ->
-              delete_object!(table, item)
-              accum = accum + 1
-            end
-          )
+        Enum.reduce(
+          list,
+          0,
+          fn item, accum ->
+            delete_object!(table, item)
+            accum + 1
+          end
+        )
       else
         0
       end
@@ -1006,12 +1002,10 @@ defmodule Mnesiar.Repo do
   ## Function
   """
   @callback load() :: term
-  @callback get_by_id!(id :: any) :: term
-  @callback get_persistent!(opt :: any) :: term
+  @callback get_persistent!(filters :: any, limit :: any) :: term
   @callback save_persistent!(o :: any, async :: any, rescue_func :: any, rescue_func_args :: any, module :: any) :: term
-  @callback prepare!(o :: any) :: term
 
-  @optional_callbacks load: 0, get_by_id!: 1, get_persistent!: 1, save_persistent!: 5
+  @optional_callbacks load: 0, get_persistent!: 2, save_persistent!: 5
 
   ##############################################################################
   @doc """
@@ -1022,7 +1016,7 @@ defmodule Mnesiar.Repo do
       use Utils
 
       import Record, only: [defrecord: 3]
-      import Ecto.Query, only: [from: 2]
+      import Ecto.Query, only: [from: 2, limit: 2]
 
       alias Utils, as: Utils
       alias Mnesiar.Repo, as: MnesiarRepo
@@ -1150,17 +1144,16 @@ defmodule Mnesiar.Repo do
       @doc """
       ### Function
       """
-      @impl
+      @impl true
       def save_persistent!(o, async \\ false, rescue_func \\ nil, rescue_func_args \\ [], module \\ nil)
 
-      @impl
+      @impl true
       def save_persistent!(o, async, rescue_func, rescue_func_args, module) do
         if is_nil(@persistent_schema) do
           UniError.raise_error!(:CODE_PERSISTENT_SCHEMA_IS_NIL_MNESIAR_ERROR, ["Persistent schema is nil"], mnesiar_repo: SelfModule)
         end
 
         {:ok, map} = SelfModule.record_to_map(o)
-        map = Map.delete(map, :roles)
 
         # TODO: Here some manipulations with data. And save in persistent. Maybe in several linked transactions
         # @persistent_schema
@@ -1208,6 +1201,14 @@ defmodule Mnesiar.Repo do
       ### Function
       """
       @impl true
+      def get_persistent!(_list, _limit) do
+        UniError.raise_error!(:CODE_PLEASE_IMPLEMENT_FUNCTION_ERROR, ["Please, implement function"], function: {:get_persistent!, 1}, module: SelfModule)
+      end
+
+      ##############################################################################
+      @doc """
+      ### Function
+      """
       def get_by_id!(id) do
         result = MnesiarRepo.get_by_id!(@table_name, id)
 
@@ -1217,7 +1218,7 @@ defmodule Mnesiar.Repo do
             if is_nil(@persistent_schema) do
               result
             else
-              SelfModule.get_persistent!(id: id)
+              SelfModule.get_persistent!([{:id, :eq, id}], 1)
             end
           else
             {:ok, cached_data_ttl} = StateUtils.get_state!(SelfModule, :cached_data_ttl)
@@ -1230,7 +1231,7 @@ defmodule Mnesiar.Repo do
               result
             else
               if now - timestamp > cached_data_ttl and not is_nil(@persistent_schema) do
-                SelfModule.get_persistent!(id: id)
+                SelfModule.get_persistent!([{:id, :eq, id}], 1)
               else
                 result
               end
@@ -1259,25 +1260,39 @@ defmodule Mnesiar.Repo do
             if is_nil(@persistent_schema) do
               result
             else
-              SelfModule.get_persistent!([{index, :eq, value}])
+              SelfModule.get_persistent!([{index, :eq, value}], 1)
             end
           else
             {:ok, cached_data_ttl} = StateUtils.get_state!(SelfModule, :cached_data_ttl)
-            now = System.system_time(:second)
-            {:ok, item} = result
+            {:ok, items} = result
 
-            {:ok, timestamp} = SelfModule.get!(item, :timestamp)
-            {:ok, id} = SelfModule.get!(item, :id)
+            items =
+              Enum.reduce(
+                items,
+                [],
+                fn item, accum ->
+                  now = System.system_time(:second)
 
-            if is_nil(cached_data_ttl) do
-              result
-            else
-              if now - timestamp > cached_data_ttl and not is_nil(@persistent_schema) do
-                SelfModule.get_persistent!(id: id)
-              else
-                result
-              end
-            end
+                  {:ok, timestamp} = SelfModule.get!(item, :timestamp)
+                  {:ok, id} = SelfModule.get!(item, :id)
+
+                  if is_nil(cached_data_ttl) do
+                    result
+                  else
+                    if now - timestamp > cached_data_ttl and not is_nil(@persistent_schema) do
+                      {:ok, item} = SelfModule.get_persistent!([{:id, :eq, id}], 1)
+                      if item == :CODE_NOTHING_FOUND do
+                        accum
+                      else
+                        accum ++ [item]
+                      end
+                    else
+                      accum ++ [item]
+                    end
+                  end
+
+                end
+              )
           end
       end
 
@@ -1291,10 +1306,18 @@ defmodule Mnesiar.Repo do
         MnesiarRepo.find_with_match_object!(@table_name, pattern)
       end
 
+      ##############################################################################
+      @doc """
+      ### Function
+      """
       def table_info!(table, key) do
         MnesiarRepo.table_info!(@table_name, key)
       end
 
+      ##############################################################################
+      @doc """
+      ### Function
+      """
       @impl true
       def load() do
         {:ok, table_name} = get_table_name()
