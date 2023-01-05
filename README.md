@@ -86,7 +86,7 @@ import Config
 
 import ConfigUtils, only: [get_env!: 3, get_env!: 2, get_env_name!: 1, in_container!: 0]
 
-in_container = in_container!()
+{:ok, in_container} = in_container!()
 
 if in_container do
   config :logger,

@@ -1142,6 +1142,8 @@ defmodule Mnesiar.Repo do
       @table_type Keyword.fetch!(opts, :table_type)
       @persistent_schema Keyword.get(opts, :persistent_schema, nil)
 
+      @logical_operators [:and, :or]
+
       ##############################################################################
       @doc """
       ### Function
@@ -1287,14 +1289,95 @@ defmodule Mnesiar.Repo do
       ##############################################################################
       @doc """
       ### Function
+
+        ```
+          alias ApiCore.Db.InMemory.Dbo.User, as: InMemoryUser
+          id = 1
+          opts = [
+            skip_cache_check: true,
+
+            # s1 control pure select from persistent db
+            s1_exclude_index_filter: true,
+            s1_exclude_opts_filter: false,
+            s1_combine_filters_with: :or,
+
+            # s2 control select from persistent db if come record was found in cache
+            s2_exclude_index_filter: false,
+            s2_exclude_opts_filter: false,
+            s2_combine_filters_with: :sdfsf,
+            combine_filters_with: :and,
+            filters: [
+              %{
+                or: [
+                  {:username, :eq, username},
+                  {:cell_phone, :eq, username},
+                  {:e_mail, :eq, username}
+                ]
+              }
+            ]
+          ]
+
+          InMemoryUser.get_by_id!(id, opts)
+        ```
       """
       def get_by_id!(id, opts \\ [])
 
       def get_by_id!(id, opts) do
-        result = MnesiarRepo.get_by_id!(@table_name, id)
+        opts_skip_cache_check = Keyword.get(opts, :skip_cache_check, false)
+
+        result =
+          if opts_skip_cache_check do
+            {:ok, :CODE_NOTHING_FOUND}
+          else
+            MnesiarRepo.get_by_id!(@table_name, id)
+          end
 
         opts_filters = Keyword.get(opts, :filters, [])
+
+        opts_s1_exclude_index_filter = Keyword.get(opts, :s1_exclude_index_filter, false)
+        opts_s1_exclude_opts_filter = Keyword.get(opts, :s1_exclude_opts_filter, false)
+        opts_s1_combine_filters_with = Keyword.get(opts, :s1_combine_filters_with, :and)
+
+        opts_s2_exclude_index_filter = Keyword.get(opts, :s2_exclude_index_filter, false)
+        opts_s2_exclude_opts_filter = Keyword.get(opts, :s2_exclude_opts_filter, false)
+        opts_s2_combine_filters_with = Keyword.get(opts, :s2_combine_filters_with, :and)
+
+        opts = Keyword.delete(opts, :skip_cache_check)
+
         opts = Keyword.delete(opts, :filters)
+
+        opts = Keyword.delete(opts, :s1_exclude_index_filter)
+        opts = Keyword.delete(opts, :s1_exclude_opts_filter)
+        opts = Keyword.delete(opts, :s1_combine_filters_with)
+
+        opts = Keyword.delete(opts, :s2_combine_filters_with)
+        opts = Keyword.delete(opts, :s2_exclude_index_filter)
+        opts = Keyword.delete(opts, :s2_exclude_opts_filter)
+
+        # TODO: U should check @table_type before set limit
+        limit = 1
+
+        s1_filters =
+          cond do
+            opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
+              []
+
+            not opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
+              [{:id, :eq, id}]
+
+            opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter ->
+              opts_filters
+
+            not opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter and opts_s1_combine_filters_with in @logical_operators ->
+              Map.put(%{}, opts_s1_combine_filters_with, opts_filters ++ [{:id, :eq, id}])
+
+            true ->
+              UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
+                s1_exclude_index_filter: opts_s1_exclude_index_filter,
+                s1_exclude_opts_filter: opts_s1_exclude_opts_filter,
+                s1_combine_filters_with: opts_s1_combine_filters_with
+              )
+          end
 
         # TODO: Please, try to use COND instead IF
         result =
@@ -1302,9 +1385,7 @@ defmodule Mnesiar.Repo do
             if is_nil(@persistent_schema) do
               result
             else
-              # TODO: U should check @table_type before set limit
-              limit = 1
-              SelfModule.get_persistent!(opts_filters ++ [{:id, :eq, id}], limit, opts)
+              SelfModule.get_persistent!(s1_filters, limit, opts)
             end
           else
             {:ok, cached_data_ttl} = StateUtils.get_state!(SelfModule, :cached_data_ttl)
@@ -1317,9 +1398,29 @@ defmodule Mnesiar.Repo do
               result
             else
               if now - timestamp > cached_data_ttl and not is_nil(@persistent_schema) do
-                # TODO: U should check @table_type before set limit
-                limit = 1
-                {:ok, item} = SelfModule.get_persistent!(opts_filters ++ [{:id, :eq, id}], limit, opts)
+                s2_filters =
+                  cond do
+                    opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
+                      []
+
+                    not opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
+                      [{:id, :eq, id}]
+
+                    opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter ->
+                      opts_filters
+
+                    not opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter and opts_s2_combine_filters_with in @logical_operators ->
+                      Map.put(%{}, opts_s2_combine_filters_with, opts_filters ++ [{:id, :eq, id}])
+
+                    true ->
+                      UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
+                        s2_exclude_index_filter: opts_s2_exclude_index_filter,
+                        s2_exclude_opts_filter: opts_s2_exclude_opts_filter,
+                        s2_combine_filters_with: opts_s2_combine_filters_with
+                      )
+                  end
+
+                {:ok, item} = SelfModule.get_persistent!(s2_filters, limit, opts)
               else
                 result
               end
@@ -1338,14 +1439,93 @@ defmodule Mnesiar.Repo do
       ##############################################################################
       @doc """
       ### Function
+        
+        ```
+          alias ApiCore.Db.InMemory.Dbo.User, as: InMemoryUser
+          username = "system"
+          opts = [
+            skip_cache_check: false,
+
+            # s1 control pure select from persistent db
+            s1_exclude_index_filter: true,
+            s1_exclude_opts_filter: false,
+            s1_combine_filters_with: :or,
+
+            # s2 control select from persistent db if come record was found in cache
+            s2_exclude_index_filter: false,
+            s2_exclude_opts_filter: false,
+            s2_combine_filters_with: :sdfsf,
+            combine_filters_with: :and,
+            filters: [
+              %{
+                or: [
+                  {:username, :eq, username},
+                  {:cell_phone, :eq, username},
+                  {:e_mail, :eq, username}
+                ]
+              }
+            ]
+          ]
+
+          InMemoryUser.find_with_index!(:username, username, opts)
+        ```
       """
       def find_with_index!(index, value, opts \\ [])
 
       def find_with_index!(index, value, opts) do
-        result = MnesiarRepo.find_with_index!(@table_name, index, value)
+        opts_skip_cache_check = Keyword.get(opts, :skip_cache_check, false)
+
+        result =
+          if opts_skip_cache_check do
+            {:ok, :CODE_NOTHING_FOUND}
+          else
+            MnesiarRepo.find_with_index!(@table_name, index, value)
+          end
 
         opts_filters = Keyword.get(opts, :filters, [])
+
+        opts_s1_exclude_index_filter = Keyword.get(opts, :s1_exclude_index_filter, false)
+        opts_s1_exclude_opts_filter = Keyword.get(opts, :s1_exclude_opts_filter, false)
+        opts_s1_combine_filters_with = Keyword.get(opts, :s1_combine_filters_with, :and)
+
+        opts_s2_exclude_index_filter = Keyword.get(opts, :s2_exclude_index_filter, false)
+        opts_s2_exclude_opts_filter = Keyword.get(opts, :s2_exclude_opts_filter, false)
+        opts_s2_combine_filters_with = Keyword.get(opts, :s2_combine_filters_with, :and)
+
         opts = Keyword.delete(opts, :filters)
+
+        opts = Keyword.delete(opts, :s1_exclude_index_filter)
+        opts = Keyword.delete(opts, :s1_exclude_opts_filter)
+        opts = Keyword.delete(opts, :s1_combine_filters_with)
+
+        opts = Keyword.delete(opts, :s2_combine_filters_with)
+        opts = Keyword.delete(opts, :s2_exclude_index_filter)
+        opts = Keyword.delete(opts, :s2_exclude_opts_filter)
+
+        # TODO: U should check @table_type before set limit
+        limit = 1
+
+        s1_filters =
+          cond do
+            opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
+              []
+
+            not opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
+              [{index, :eq, value}]
+
+            opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter ->
+              opts_filters
+
+            not opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter and opts_s1_combine_filters_with in @logical_operators ->
+              Map.put(%{}, opts_s1_combine_filters_with, opts_filters ++ [{index, :eq, value}])
+
+            true ->
+              UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
+                s1_exclude_index_filter: opts_s1_exclude_index_filter,
+                s1_exclude_opts_filter: opts_s1_exclude_opts_filter,
+                s1_combine_filters_with: opts_s1_combine_filters_with
+              )
+          end
 
         # TODO: Please, try to use COND instead IF
         result =
@@ -1353,9 +1533,7 @@ defmodule Mnesiar.Repo do
             if is_nil(@persistent_schema) do
               result
             else
-              # TODO: U should check @table_type before set limit
-              limit = 1
-              SelfModule.get_persistent!(opts_filters ++ [{index, :eq, value}], limit, opts)
+              SelfModule.get_persistent!(s1_filters, limit, opts)
             end
           else
             {:ok, cached_data_ttl} = StateUtils.get_state!(SelfModule, :cached_data_ttl)
@@ -1375,9 +1553,29 @@ defmodule Mnesiar.Repo do
                     result
                   else
                     if now - timestamp > cached_data_ttl and not is_nil(@persistent_schema) do
-                      # TODO: U should check @table_type before set limit
-                      limit = 1
-                      {:ok, item} = SelfModule.get_persistent!(opts_filters ++ [{:id, :eq, id}], limit, opts)
+                      s2_filters =
+                        cond do
+                          opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
+                            []
+
+                          not opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
+                            [{:id, :eq, id}]
+
+                          opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter ->
+                            opts_filters
+
+                          not opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter and opts_s2_combine_filters_with in @logical_operators ->
+                            Map.put(%{}, opts_s2_combine_filters_with, opts_filters ++ [{:id, :eq, id}])
+
+                          true ->
+                            UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
+                              s2_exclude_index_filter: opts_s2_exclude_index_filter,
+                              s2_exclude_opts_filter: opts_s2_exclude_opts_filter,
+                              s2_combine_filters_with: opts_s2_combine_filters_with
+                            )
+                        end
+
+                      {:ok, item} = SelfModule.get_persistent!(s2_filters, limit, opts)
 
                       if item == :CODE_NOTHING_FOUND do
                         accum
