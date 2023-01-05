@@ -999,13 +999,124 @@ defmodule Mnesiar.Repo do
 
   ##############################################################################
   @doc """
-  ## Function
+  ### Function
+
+  ```
+    @impl true
+    def load() do
+      {:ok, table_name} = get_table_name()
+      Logger.info("[#{inspect(__MODULE__)}][#{inspect(__ENV__.function)}] I will load data to table {table_name} in in-memory DB")
+      #
+      Logger.info("[#{inspect(__MODULE__)}][#{inspect(__ENV__.function)}] Data loaded to table {table_name} in in-memory DB successfully")
+      :ok
+    end
+  ```
   """
   @callback load() :: term
-  @callback get_persistent!(filters :: any, limit :: any) :: term
+
+  ###########################################################################
+  @doc """
+  ### Function
+
+  ```
+      @impl true
+      def get_persistent!(filters, limit, opts \\ [])
+
+      def get_persistent!(filters, limit, opts)
+          when (not is_nil(limit) and (not is_integer(limit) or limit <= 0)) or (not is_nil(filters) and not is_map(filters) and not is_list(filters)) or not is_list(opts),
+          do:
+            UniError.raise_error!(
+              :CODE_WRONG_FUNCTION_ARGUMENT_ERROR,
+              ["opts cannot be nil; filters if not nil must be a map or a list; limit if not nil must be an integer and must be > 0; opts must be a list"]
+            )
+
+      @impl true
+      def get_persistent!(filters, limit, opts) do
+        if is_nil(@persistent_schema) do
+          UniError.raise_error!(:CODE_PERSISTENT_SCHEMA_IS_NIL_MNESIAR_ERROR, ["Persistent schema is nil"], module: SelfModule)
+        end
+
+        query =
+          from(
+            o in @persistent_schema,
+            select: o
+          )
+
+        query =
+          if is_nil(limit) do
+            query
+          else
+            limit(query, ^limit)
+          end
+
+        {:ok, query} = @persistent_schema.simple_where_filter!(query, filters)
+
+        result = @persistent_schema.get_by_query!(query, opts)
+
+        if result == {:ok, :CODE_NOTHING_FOUND} do
+          result
+        else
+          {:ok, [item]} = result
+          item = Map.from_struct(item)
+
+          {:ok, item} = SelfModule.map_to_record(item)
+          {:ok, item} = SelfModule.prepare!(item)
+          SelfModule.save!(item)
+
+          {:ok, item}
+        end
+      end
+  ```
+  OR
+  ```
+      @impl true
+      def get_persistent!(_filters, _limit, _opts) do
+        UniError.raise_error!(:CODE_PLEASE_IMPLEMENT_FUNCTION_ERROR, ["Please, implement function"], function: {:get_persistent!, 2}, module: SelfModule)
+      end
+  ```
+  """
+  @callback get_persistent!(filters :: any, limit :: any, opts :: any) :: term
+
+  ###########################################################################
+  @doc """
+  ### Function
+
+  ```
+      @impl true
+      def save_persistent!(o, async \\ false, rescue_func \\ nil, rescue_func_args \\ [], module \\ nil)
+
+      @impl true
+      def save_persistent!(o, async, rescue_func, rescue_func_args, module) do
+        if is_nil(@persistent_schema) do
+          UniError.raise_error!(:CODE_PERSISTENT_SCHEMA_IS_NIL_MNESIAR_ERROR, ["Persistent schema is nil"], module: SelfModule)
+        end
+
+        {:ok, map} = SelfModule.record_to_map(o)
+
+        # TODO: Here some manipulations with data. And save in persistent. Maybe in several linked transactions
+        # @persistent_schema
+
+        @persistent_schema.update!(map, async, rescue_func, rescue_func_args, module)
+
+        {:ok, o}
+      end
+  ```
+
+    OR
+
+  ```
+      @impl true
+      def save_persistent!(o, async \\ false, rescue_func \\ nil, rescue_func_args \\ [], module \\ nil)
+
+      @impl true
+      def save_persistent!(_o, _async, _rescue_func, _rescue_func_args, _module) do
+        UniError.raise_error!(:CODE_PLEASE_IMPLEMENT_FUNCTION_ERROR, ["Please, implement function"], function: {:save_persistent!, 2}, module: SelfModule)
+      end
+  ```
+  """
   @callback save_persistent!(o :: any, async :: any, rescue_func :: any, rescue_func_args :: any, module :: any) :: term
 
-  @optional_callbacks load: 0, get_persistent!: 2, save_persistent!: 5
+  @optional_callbacks load: 0
 
   ##############################################################################
   @doc """
@@ -1140,29 +1251,6 @@ defmodule Mnesiar.Repo do
         MnesiarRepo.change_table_copy_storage_type!(@table_name, node, type)
       end
 
-      ###########################################################################
-      @doc """
-      ### Function
-      """
-      @impl true
-      def save_persistent!(o, async \\ false, rescue_func \\ nil, rescue_func_args \\ [], module \\ nil)
-
-      @impl true
-      def save_persistent!(o, async, rescue_func, rescue_func_args, module) do
-        if is_nil(@persistent_schema) do
-          UniError.raise_error!(:CODE_PERSISTENT_SCHEMA_IS_NIL_MNESIAR_ERROR, ["Persistent schema is nil"], mnesiar_repo: SelfModule)
-        end
-
-        {:ok, map} = SelfModule.record_to_map(o)
-
-        # TODO: Here some manipulations with data. And save in persistent. Maybe in several linked transactions
-        # @persistent_schema
-
-        @persistent_schema.update!(map, async, rescue_func, rescue_func_args, module)
-
-        {:ok, o}
-      end
-
       ##############################################################################
       @doc """
       ### Function
@@ -1185,7 +1273,7 @@ defmodule Mnesiar.Repo do
           SelfModule.save_persistent!(o, async, rescue_func, rescue_func_args, module)
         end
 
-        MnesiarRepo.save!(@table_name, o)
+        SelfModule.save!(o)
       end
 
       ##############################################################################
@@ -1200,17 +1288,13 @@ defmodule Mnesiar.Repo do
       @doc """
       ### Function
       """
-      @impl true
-      def get_persistent!(_list, _limit) do
-        UniError.raise_error!(:CODE_PLEASE_IMPLEMENT_FUNCTION_ERROR, ["Please, implement function"], function: {:get_persistent!, 1}, module: SelfModule)
-      end
+      def get_by_id!(id, opts \\ [])
 
-      ##############################################################################
-      @doc """
-      ### Function
-      """
-      def get_by_id!(id) do
+      def get_by_id!(id, opts) do
         result = MnesiarRepo.get_by_id!(@table_name, id)
+
+        opts_filters = Keyword.get(opts, :filters, [])
+        opts = Keyword.delete(opts, :filters)
 
         # TODO: Please, try to use COND instead IF
         result =
@@ -1218,7 +1302,9 @@ defmodule Mnesiar.Repo do
             if is_nil(@persistent_schema) do
               result
             else
-              SelfModule.get_persistent!([{:id, :eq, id}], 1)
+              # TODO: U should check @table_type before set limit
+              limit = 1
+              SelfModule.get_persistent!(opts_filters ++ [{:id, :eq, id}], limit, opts)
             end
           else
             {:ok, cached_data_ttl} = StateUtils.get_state!(SelfModule, :cached_data_ttl)
@@ -1231,7 +1317,9 @@ defmodule Mnesiar.Repo do
               result
             else
               if now - timestamp > cached_data_ttl and not is_nil(@persistent_schema) do
-                SelfModule.get_persistent!([{:id, :eq, id}], 1)
+                # TODO: U should check @table_type before set limit
+                limit = 1
+                {:ok, item} = SelfModule.get_persistent!(opts_filters ++ [{:id, :eq, id}], limit, opts)
               else
                 result
               end
@@ -1251,8 +1339,13 @@ defmodule Mnesiar.Repo do
       @doc """
       ### Function
       """
-      def find_with_index!(index, value) do
+      def find_with_index!(index, value, opts \\ [])
+
+      def find_with_index!(index, value, opts) do
         result = MnesiarRepo.find_with_index!(@table_name, index, value)
+
+        opts_filters = Keyword.get(opts, :filters, [])
+        opts = Keyword.delete(opts, :filters)
 
         # TODO: Please, try to use COND instead IF
         result =
@@ -1260,7 +1353,9 @@ defmodule Mnesiar.Repo do
             if is_nil(@persistent_schema) do
               result
             else
-              SelfModule.get_persistent!([{index, :eq, value}], 1)
+              # TODO: U should check @table_type before set limit
+              limit = 1
+              SelfModule.get_persistent!(opts_filters ++ [{index, :eq, value}], limit, opts)
             end
           else
             {:ok, cached_data_ttl} = StateUtils.get_state!(SelfModule, :cached_data_ttl)
@@ -1280,7 +1375,10 @@ defmodule Mnesiar.Repo do
                     result
                   else
                     if now - timestamp > cached_data_ttl and not is_nil(@persistent_schema) do
-                      {:ok, item} = SelfModule.get_persistent!([{:id, :eq, id}], 1)
+                      # TODO: U should check @table_type before set limit
+                      limit = 1
+                      {:ok, item} = SelfModule.get_persistent!(opts_filters ++ [{:id, :eq, id}], limit, opts)
+
                       if item == :CODE_NOTHING_FOUND do
                         accum
                       else
@@ -1290,9 +1388,10 @@ defmodule Mnesiar.Repo do
                       accum ++ [item]
                     end
                   end
-
                 end
               )
+
+            {:ok, items}
           end
       end
 
@@ -1312,21 +1411,6 @@ defmodule Mnesiar.Repo do
       """
       def table_info!(table, key) do
         MnesiarRepo.table_info!(@table_name, key)
-      end
-
-      ##############################################################################
-      @doc """
-      ### Function
-      """
-      @impl true
-      def load() do
-        {:ok, table_name} = get_table_name()
-
-        Logger.info("[#{inspect(__MODULE__)}][#{inspect(__ENV__.function)}] I will load data to table #{table_name} in in-memory DB")
-
-        Logger.info("[#{inspect(__MODULE__)}][#{inspect(__ENV__.function)}] Data loaded to table #{table_name} in in-memory DB successfully")
-
-        :ok
       end
 
       defoverridable MnesiarRepo
