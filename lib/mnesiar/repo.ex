@@ -1256,10 +1256,27 @@ defmodule Mnesiar.Repo do
       ##############################################################################
       @doc """
       ### Function
+      ```
+          opts = [kep_timestamp: true]
+      ```
       """
-      def save!(o) do
-        now = System.system_time(:second)
-        {:ok, o} = put!(o, :timestamp, now)
+      def save!(o, opts \\ [])
+
+      def save!(o, opts)
+          when not is_list(opts),
+          do: UniError.raise_error!(:CODE_WRONG_FUNCTION_ARGUMENT_ERROR, ["opts cannot be nil; opts must be a list"])
+
+      def save!(o, opts) do
+        kep_timestamp = Keyword.get(opts, :kep_timestamp, false)
+
+        o =
+          if kep_timestamp do
+            o
+          else
+            now = System.system_time(:second)
+            {:ok, o} = put!(o, :timestamp, now)
+            o
+          end
 
         MnesiarRepo.save!(@table_name, o)
       end
@@ -1268,14 +1285,14 @@ defmodule Mnesiar.Repo do
       @doc """
       ### Function
       """
-      def save!(o, async, rescue_func \\ nil, rescue_func_args \\ [], module \\ nil)
+      def save!(o, opts, async, rescue_func \\ nil, rescue_func_args \\ [], module \\ nil)
 
-      def save!(o, async, rescue_func, rescue_func_args, module) do
+      def save!(o, opts, async, rescue_func, rescue_func_args, module) do
         if not is_nil(@persistent_schema) do
           SelfModule.save_persistent!(o, async, rescue_func, rescue_func_args, module)
         end
 
-        SelfModule.save!(o)
+        SelfModule.save!(o, opts)
       end
 
       ##############################################################################
@@ -1357,39 +1374,46 @@ defmodule Mnesiar.Repo do
         # TODO: U should check @table_type before set limit
         limit = 1
 
-        s1_filters =
-          cond do
-            opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
-              []
-
-            not opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
-              [{:id, :eq, id}]
-
-            opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter ->
-              opts_filters
-
-            not opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter and opts_s1_combine_filters_with in @logical_operators ->
-              Map.put(%{}, opts_s1_combine_filters_with, opts_filters ++ [{:id, :eq, id}])
-
-            true ->
-              UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
-                s1_exclude_index_filter: opts_s1_exclude_index_filter,
-                s1_exclude_opts_filter: opts_s1_exclude_opts_filter,
-                s1_combine_filters_with: opts_s1_combine_filters_with
-              )
-          end
-
         # TODO: Please, try to use COND instead IF
         result =
           if result == {:ok, :CODE_NOTHING_FOUND} do
             if is_nil(@persistent_schema) do
               result
             else
+              s1_filters =
+                cond do
+                  opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
+                    []
+
+                  not opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
+                    [{:id, :eq, id}]
+
+                  opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter ->
+                    opts_filters
+
+                  not opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter and opts_s1_combine_filters_with in @logical_operators ->
+                    Map.put(%{}, opts_s1_combine_filters_with, opts_filters ++ [{:id, :eq, id}])
+
+                  true ->
+                    UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
+                      s1_exclude_index_filter: opts_s1_exclude_index_filter,
+                      s1_exclude_opts_filter: opts_s1_exclude_opts_filter,
+                      s1_combine_filters_with: opts_s1_combine_filters_with
+                    )
+                end
+
               SelfModule.get_persistent!(s1_filters, limit, opts)
             end
           else
             {:ok, cached_data_ttl} = StateUtils.get_state!(SelfModule, :cached_data_ttl)
             {:ok, items} = result
+
+            items =
+              if is_list(items) do
+                items
+              else
+                [items]
+              end
 
             items =
               Enum.reduce(
@@ -1402,37 +1426,36 @@ defmodule Mnesiar.Repo do
                   {:ok, id} = SelfModule.get!(item, :id)
 
                   if is_nil(cached_data_ttl) do
-                    result
+                    accum ++ [item]
                   else
                     if now - timestamp > cached_data_ttl and not is_nil(@persistent_schema) do
-
                       SelfModule.delete!(id)
-
-                      s2_filters =
-                        cond do
-                          opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
-                            []
-
-                          not opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
-                            [{:id, :eq, id}]
-
-                          opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter ->
-                            opts_filters
-
-                          not opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter and opts_s2_combine_filters_with in @logical_operators ->
-                            Map.put(%{}, opts_s2_combine_filters_with, opts_filters ++ [{:id, :eq, id}])
-
-                          true ->
-                            UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
-                              s2_exclude_index_filter: opts_s2_exclude_index_filter,
-                              s2_exclude_opts_filter: opts_s2_exclude_opts_filter,
-                              s2_combine_filters_with: opts_s2_combine_filters_with
-                            )
-                        end
 
                       if is_nil(@persistent_schema) do
                         accum
                       else
+                        s2_filters =
+                          cond do
+                            opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
+                              []
+
+                            not opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
+                              [{:id, :eq, id}]
+
+                            opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter ->
+                              opts_filters
+
+                            not opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter and opts_s2_combine_filters_with in @logical_operators ->
+                              Map.put(%{}, opts_s2_combine_filters_with, opts_filters ++ [{:id, :eq, id}])
+
+                            true ->
+                              UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
+                                s2_exclude_index_filter: opts_s2_exclude_index_filter,
+                                s2_exclude_opts_filter: opts_s2_exclude_opts_filter,
+                                s2_combine_filters_with: opts_s2_combine_filters_with
+                              )
+                          end
+
                         {:ok, items2} = SelfModule.get_persistent!(s2_filters, limit, opts)
 
                         if items2 == :CODE_NOTHING_FOUND do
@@ -1529,39 +1552,46 @@ defmodule Mnesiar.Repo do
         # TODO: U should check @table_type before set limit
         limit = 1
 
-        s1_filters =
-          cond do
-            opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
-              []
-
-            not opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
-              [{index, :eq, value}]
-
-            opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter ->
-              opts_filters
-
-            not opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter and opts_s1_combine_filters_with in @logical_operators ->
-              Map.put(%{}, opts_s1_combine_filters_with, opts_filters ++ [{index, :eq, value}])
-
-            true ->
-              UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
-                s1_exclude_index_filter: opts_s1_exclude_index_filter,
-                s1_exclude_opts_filter: opts_s1_exclude_opts_filter,
-                s1_combine_filters_with: opts_s1_combine_filters_with
-              )
-          end
-
         # TODO: Please, try to use COND instead IF
         result =
           if result == {:ok, :CODE_NOTHING_FOUND} do
             if is_nil(@persistent_schema) do
               result
             else
+              s1_filters =
+                cond do
+                  opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
+                    []
+
+                  not opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
+                    [{index, :eq, value}]
+
+                  opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter ->
+                    opts_filters
+
+                  not opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter and opts_s1_combine_filters_with in @logical_operators ->
+                    Map.put(%{}, opts_s1_combine_filters_with, opts_filters ++ [{index, :eq, value}])
+
+                  true ->
+                    UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
+                      s1_exclude_index_filter: opts_s1_exclude_index_filter,
+                      s1_exclude_opts_filter: opts_s1_exclude_opts_filter,
+                      s1_combine_filters_with: opts_s1_combine_filters_with
+                    )
+                end
+
               SelfModule.get_persistent!(s1_filters, limit, opts)
             end
           else
             {:ok, cached_data_ttl} = StateUtils.get_state!(SelfModule, :cached_data_ttl)
             {:ok, items} = result
+
+            items =
+              if is_list(items) do
+                items
+              else
+                [items]
+              end
 
             items =
               Enum.reduce(
@@ -1574,37 +1604,43 @@ defmodule Mnesiar.Repo do
                   {:ok, id} = SelfModule.get!(item, :id)
 
                   if is_nil(cached_data_ttl) do
-                    result
+                    accum ++ [item]
                   else
                     if now - timestamp > cached_data_ttl and not is_nil(@persistent_schema) do
-                      s2_filters =
-                        cond do
-                          opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
-                            []
+                      SelfModule.delete!(id)
 
-                          not opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
-                            [{:id, :eq, id}]
-
-                          opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter ->
-                            opts_filters
-
-                          not opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter and opts_s2_combine_filters_with in @logical_operators ->
-                            Map.put(%{}, opts_s2_combine_filters_with, opts_filters ++ [{:id, :eq, id}])
-
-                          true ->
-                            UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
-                              s2_exclude_index_filter: opts_s2_exclude_index_filter,
-                              s2_exclude_opts_filter: opts_s2_exclude_opts_filter,
-                              s2_combine_filters_with: opts_s2_combine_filters_with
-                            )
-                        end
-
-                      {:ok, items2} = SelfModule.get_persistent!(s2_filters, limit, opts)
-
-                      if items2 == :CODE_NOTHING_FOUND do
+                      if is_nil(@persistent_schema) do
                         accum
                       else
-                        accum ++ items2
+                        s2_filters =
+                          cond do
+                            opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
+                              []
+
+                            not opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
+                              [{:id, :eq, id}]
+
+                            opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter ->
+                              opts_filters
+
+                            not opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter and opts_s2_combine_filters_with in @logical_operators ->
+                              Map.put(%{}, opts_s2_combine_filters_with, opts_filters ++ [{:id, :eq, id}])
+
+                            true ->
+                              UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
+                                s2_exclude_index_filter: opts_s2_exclude_index_filter,
+                                s2_exclude_opts_filter: opts_s2_exclude_opts_filter,
+                                s2_combine_filters_with: opts_s2_combine_filters_with
+                              )
+                          end
+
+                        {:ok, items2} = SelfModule.get_persistent!(s2_filters, limit, opts)
+
+                        if items2 == :CODE_NOTHING_FOUND do
+                          accum
+                        else
+                          accum ++ items2
+                        end
                       end
                     else
                       accum ++ [item]
