@@ -1050,20 +1050,40 @@ defmodule Mnesiar.Repo do
           end
 
         {:ok, query} = @persistent_schema.simple_where_filter!(query, filters)
+        preloads = Keyword.get(opts, :preloads, nil)
+        opts = Keyword.delete(opts, :preloads)
 
         result = @persistent_schema.get_by_query!(query, opts)
 
         if result == {:ok, :CODE_NOTHING_FOUND} do
           result
         else
-          {:ok, [item]} = result
-          item = Map.from_struct(item)
+          {:ok, items} = result
 
-          {:ok, item} = SelfModule.map_to_record(item)
-          {:ok, item} = SelfModule.prepare!(item)
-          SelfModule.save!(item)
+          items =
+            Enum.reduce(
+              items,
+              [],
+              fn item, accum ->
+                item =
+                  if is_nil(preloads) do
+                    item
+                  else
+                    {:ok, item} = @persistent_schema.preload!(item, preloads)
+                    item
+                  end
 
-          {:ok, item}
+                item = Map.from_struct(item)
+
+                {:ok, item} = SelfModule.map_to_record(item)
+                {:ok, item} = SelfModule.prepare!(item)
+                {:ok, item} = SelfModule.save!(item)
+
+                accum ++ [item]
+              end
+            )
+
+          {:ok, items}
         end
       end
   ```
