@@ -664,7 +664,7 @@ defmodule Mnesiar.Repo do
   @doc """
   read
   """
-  def get_by_id!(table, id) do
+  def read!(table, id) do
     result = Mnesia.transaction(fn -> Mnesia.read(table, id) end)
 
     result =
@@ -1017,81 +1017,13 @@ defmodule Mnesiar.Repo do
   ###########################################################################
   @doc """
   ### Function
+    See get_common_persistent
 
-  ```
-      @impl true
-      def get_persistent!(filters, limit, opts \\ [])
-
-      def get_persistent!(filters, limit, opts)
-          when (not is_nil(limit) and (not is_integer(limit) or limit <= 0)) or (not is_nil(filters) and not is_map(filters) and not is_list(filters)) or not is_list(opts),
-          do:
-            UniError.raise_error!(
-              :CODE_WRONG_FUNCTION_ARGUMENT_ERROR,
-              ["opts cannot be nil; filters if not nil must be a map or a list; limit if not nil must be an integer and must be > 0; opts must be a list"]
-            )
-
-      @impl true
-      def get_persistent!(filters, limit, opts) do
-        if is_nil(@persistent_schema) do
-          UniError.raise_error!(:CODE_PERSISTENT_SCHEMA_IS_NIL_MNESIAR_ERROR, ["Persistent schema is nil"], module: SelfModule)
-        end
-
-        query =
-          from(
-            o in @persistent_schema,
-            select: o
-          )
-
-        query =
-          if is_nil(limit) do
-            query
-          else
-            limit(query, ^limit)
-          end
-
-        {:ok, query} = @persistent_schema.simple_where_filter!(query, filters)
-        preloads = Keyword.get(opts, :preloads, nil)
-        opts = Keyword.delete(opts, :preloads)
-
-        result = @persistent_schema.get_by_query!(query, opts)
-
-        if result == {:ok, :CODE_NOTHING_FOUND} do
-          result
-        else
-          {:ok, items} = result
-
-          items =
-            Enum.reduce(
-              items,
-              [],
-              fn item, accum ->
-                item =
-                  if is_nil(preloads) do
-                    item
-                  else
-                    {:ok, item} = @persistent_schema.preload!(item, preloads)
-                    item
-                  end
-
-                item = Map.from_struct(item)
-
-                {:ok, item} = SelfModule.map_to_record(item)
-                {:ok, item} = SelfModule.prepare!(item)
-                {:ok, item} = SelfModule.save!(item)
-
-                accum ++ [item]
-              end
-            )
-
-          {:ok, items}
-        end
-      end
-  ```
   OR
   ```
       @impl true
       def get_persistent!(_filters, _limit, _opts) do
-        UniError.raise_error!(:CODE_PLEASE_IMPLEMENT_FUNCTION_ERROR, ["Please, implement function"], function: {:get_persistent!, 2}, module: SelfModule)
+        UniError.raise_error!(:CODE_PLEASE_IMPLEMENT_FUNCTION_ERROR, ["Please, implement function"], function: {:get_persistent!, 3}, module: SelfModule)
       end
   ```
   """
@@ -1305,6 +1237,75 @@ defmodule Mnesiar.Repo do
       @doc """
       ### Function
       """
+      def get_common_persistent!(filters, limit, opts \\ [])
+
+      def get_common_persistent!(filters, limit, opts)
+          when (not is_nil(limit) and (not is_integer(limit) or limit <= 0)) or (not is_nil(filters) and not is_map(filters) and not is_list(filters)) or not is_list(opts),
+          do:
+            UniError.raise_error!(
+              :CODE_WRONG_FUNCTION_ARGUMENT_ERROR,
+              ["opts cannot be nil; filters if not nil must be a map or a list; limit if not nil must be an integer and must be > 0; opts must be a list"]
+            )
+
+      def get_common_persistent!(filters, limit, opts) do
+        if is_nil(@persistent_schema) do
+          UniError.raise_error!(:CODE_PERSISTENT_SCHEMA_IS_NIL_MNESIAR_ERROR, ["Persistent schema is nil"], module: SelfModule)
+        end
+
+        query =
+          from(
+            o in @persistent_schema,
+            select: o
+          )
+
+        query =
+          if is_nil(limit) do
+            query
+          else
+            limit(query, ^limit)
+          end
+
+        {:ok, query} = @persistent_schema.simple_where_filter!(query, filters)
+        preloads = Keyword.get(opts, :preloads, nil)
+        opts = Keyword.delete(opts, :preloads)
+
+        result = @persistent_schema.get_by_query!(query, opts)
+
+        if result == {:ok, :CODE_NOTHING_FOUND} do
+          result
+        else
+          {:ok, items} = result
+
+          items =
+            Enum.reduce(
+              items,
+              [],
+              fn item, accum ->
+                item =
+                  if is_nil(preloads) do
+                    item
+                  else
+                    {:ok, item} = @persistent_schema.preload!(item, preloads)
+                    item
+                  end
+
+                item = Map.from_struct(item)
+                {:ok, item} = SelfModule.map_to_record(item)
+                {:ok, item} = SelfModule.prepare!(item)
+                {:ok, item} = SelfModule.save!(item)
+
+                accum ++ [item]
+              end
+            )
+
+          {:ok, items}
+        end
+      end
+
+      ##############################################################################
+      @doc """
+      ### Function
+      """
       def save!(o, opts, async, rescue_func \\ nil, rescue_func_args \\ [], module \\ nil)
 
       def save!(o, opts, async, rescue_func, rescue_func_args, module) do
@@ -1366,7 +1367,7 @@ defmodule Mnesiar.Repo do
           if opts_skip_cache_check do
             {:ok, :CODE_NOTHING_FOUND}
           else
-            MnesiarRepo.get_by_id!(@table_name, id)
+            MnesiarRepo.read!(@table_name, id)
           end
 
         opts_filters = Keyword.get(opts, :filters, [])
@@ -1398,7 +1399,11 @@ defmodule Mnesiar.Repo do
         result =
           if result == {:ok, :CODE_NOTHING_FOUND} do
             if is_nil(@persistent_schema) do
-              result
+              if is_list(result) do
+                result
+              else
+                [result]
+              end
             else
               s1_filters =
                 cond do
