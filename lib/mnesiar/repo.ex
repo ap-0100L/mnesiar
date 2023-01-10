@@ -1265,6 +1265,9 @@ defmodule Mnesiar.Repo do
             limit(query, ^limit)
           end
 
+        state_id = Keyword.get(opts, :state_id, "active")
+        opts = Keyword.delete(opts, :state_id)
+
         {:ok, query} = @persistent_schema.simple_where_filter!(query, filters)
         preloads = Keyword.get(opts, :preloads, nil)
         opts = Keyword.delete(opts, :preloads)
