@@ -1236,6 +1236,12 @@ defmodule Mnesiar.Repo do
       ##############################################################################
       @doc """
       ### Function
+        ```
+          opts = [
+            preload: [:groups, :perks],
+            state_id: "active"
+          ]
+        ```
       """
       def get_common_persistent!(filters, limit, opts \\ [])
 
@@ -1265,13 +1271,10 @@ defmodule Mnesiar.Repo do
             limit(query, ^limit)
           end
 
-        state_id = Keyword.get(opts, :state_id, "active")
-        opts = Keyword.delete(opts, :state_id)
-
-        {:ok, query} = @persistent_schema.simple_where_filter!(query, filters)
         preloads = Keyword.get(opts, :preloads, nil)
         opts = Keyword.delete(opts, :preloads)
 
+        {:ok, query} = @persistent_schema.simple_where_filter!(query, filters)
         result = @persistent_schema.get_by_query!(query, opts)
 
         if result == {:ok, :CODE_NOTHING_FOUND} do
@@ -1338,12 +1341,12 @@ defmodule Mnesiar.Repo do
             skip_cache_check: true,
 
             # s1 control pure select from persistent db
-            s1_exclude_index_filter: true,
+            s1_exclude_main_filter: true,
             s1_exclude_opts_filter: false,
             s1_combine_filters_with: :or,
 
             # s2 control select from persistent db if come record was found in cache
-            s2_exclude_index_filter: false,
+            s2_exclude_main_filter: false,
             s2_exclude_opts_filter: false,
             s2_combine_filters_with: :sdfsf,
             combine_filters_with: :and,
@@ -1375,11 +1378,11 @@ defmodule Mnesiar.Repo do
 
         opts_filters = Keyword.get(opts, :filters, [])
 
-        opts_s1_exclude_index_filter = Keyword.get(opts, :s1_exclude_index_filter, false)
+        opts_s1_exclude_main_filter = Keyword.get(opts, :s1_exclude_main_filter, false)
         opts_s1_exclude_opts_filter = Keyword.get(opts, :s1_exclude_opts_filter, false)
         opts_s1_combine_filters_with = Keyword.get(opts, :s1_combine_filters_with, :and)
 
-        opts_s2_exclude_index_filter = Keyword.get(opts, :s2_exclude_index_filter, false)
+        opts_s2_exclude_main_filter = Keyword.get(opts, :s2_exclude_main_filter, false)
         opts_s2_exclude_opts_filter = Keyword.get(opts, :s2_exclude_opts_filter, false)
         opts_s2_combine_filters_with = Keyword.get(opts, :s2_combine_filters_with, :and)
 
@@ -1387,12 +1390,12 @@ defmodule Mnesiar.Repo do
 
         opts = Keyword.delete(opts, :filters)
 
-        opts = Keyword.delete(opts, :s1_exclude_index_filter)
+        opts = Keyword.delete(opts, :s1_exclude_main_filter)
         opts = Keyword.delete(opts, :s1_exclude_opts_filter)
         opts = Keyword.delete(opts, :s1_combine_filters_with)
 
         opts = Keyword.delete(opts, :s2_combine_filters_with)
-        opts = Keyword.delete(opts, :s2_exclude_index_filter)
+        opts = Keyword.delete(opts, :s2_exclude_main_filter)
         opts = Keyword.delete(opts, :s2_exclude_opts_filter)
 
         # TODO: U should check @table_type before set limit
@@ -1410,21 +1413,21 @@ defmodule Mnesiar.Repo do
             else
               s1_filters =
                 cond do
-                  opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
+                  opts_s1_exclude_main_filter and opts_s1_exclude_opts_filter ->
                     []
 
-                  not opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
+                  not opts_s1_exclude_main_filter and opts_s1_exclude_opts_filter ->
                     [{:id, :eq, id}]
 
-                  opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter ->
+                  opts_s1_exclude_main_filter and not opts_s1_exclude_opts_filter ->
                     opts_filters
 
-                  not opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter and opts_s1_combine_filters_with in @logical_operators ->
+                  not opts_s1_exclude_main_filter and not opts_s1_exclude_opts_filter and opts_s1_combine_filters_with in @logical_operators ->
                     Map.put(%{}, opts_s1_combine_filters_with, opts_filters ++ [{:id, :eq, id}])
 
                   true ->
                     UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
-                      s1_exclude_index_filter: opts_s1_exclude_index_filter,
+                      s1_exclude_main_filter: opts_s1_exclude_main_filter,
                       s1_exclude_opts_filter: opts_s1_exclude_opts_filter,
                       s1_combine_filters_with: opts_s1_combine_filters_with
                     )
@@ -1464,21 +1467,21 @@ defmodule Mnesiar.Repo do
                       else
                         s2_filters =
                           cond do
-                            opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
+                            opts_s2_exclude_main_filter and opts_s2_exclude_opts_filter ->
                               []
 
-                            not opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
+                            not opts_s2_exclude_main_filter and opts_s2_exclude_opts_filter ->
                               [{:id, :eq, id}]
 
-                            opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter ->
+                            opts_s2_exclude_main_filter and not opts_s2_exclude_opts_filter ->
                               opts_filters
 
-                            not opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter and opts_s2_combine_filters_with in @logical_operators ->
+                            not opts_s2_exclude_main_filter and not opts_s2_exclude_opts_filter and opts_s2_combine_filters_with in @logical_operators ->
                               Map.put(%{}, opts_s2_combine_filters_with, opts_filters ++ [{:id, :eq, id}])
 
                             true ->
                               UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
-                                s2_exclude_index_filter: opts_s2_exclude_index_filter,
+                                s2_exclude_main_filter: opts_s2_exclude_main_filter,
                                 s2_exclude_opts_filter: opts_s2_exclude_opts_filter,
                                 s2_combine_filters_with: opts_s2_combine_filters_with
                               )
@@ -1522,12 +1525,12 @@ defmodule Mnesiar.Repo do
             skip_cache_check: false,
 
             # s1 control pure select from persistent db
-            s1_exclude_index_filter: true,
+            s1_exclude_main_filter: true,
             s1_exclude_opts_filter: false,
             s1_combine_filters_with: :or,
 
             # s2 control select from persistent db if come record was found in cache
-            s2_exclude_index_filter: false,
+            s2_exclude_main_filter: false,
             s2_exclude_opts_filter: false,
             s2_combine_filters_with: :sdfsf,
             combine_filters_with: :and,
@@ -1559,22 +1562,22 @@ defmodule Mnesiar.Repo do
 
         opts_filters = Keyword.get(opts, :filters, [])
 
-        opts_s1_exclude_index_filter = Keyword.get(opts, :s1_exclude_index_filter, false)
+        opts_s1_exclude_main_filter = Keyword.get(opts, :s1_exclude_main_filter, false)
         opts_s1_exclude_opts_filter = Keyword.get(opts, :s1_exclude_opts_filter, false)
         opts_s1_combine_filters_with = Keyword.get(opts, :s1_combine_filters_with, :and)
 
-        opts_s2_exclude_index_filter = Keyword.get(opts, :s2_exclude_index_filter, false)
+        opts_s2_exclude_main_filter = Keyword.get(opts, :s2_exclude_main_filter, false)
         opts_s2_exclude_opts_filter = Keyword.get(opts, :s2_exclude_opts_filter, false)
         opts_s2_combine_filters_with = Keyword.get(opts, :s2_combine_filters_with, :and)
 
         opts = Keyword.delete(opts, :filters)
 
-        opts = Keyword.delete(opts, :s1_exclude_index_filter)
+        opts = Keyword.delete(opts, :s1_exclude_main_filter)
         opts = Keyword.delete(opts, :s1_exclude_opts_filter)
         opts = Keyword.delete(opts, :s1_combine_filters_with)
 
         opts = Keyword.delete(opts, :s2_combine_filters_with)
-        opts = Keyword.delete(opts, :s2_exclude_index_filter)
+        opts = Keyword.delete(opts, :s2_exclude_main_filter)
         opts = Keyword.delete(opts, :s2_exclude_opts_filter)
 
         # TODO: U should check @table_type before set limit
@@ -1588,21 +1591,21 @@ defmodule Mnesiar.Repo do
             else
               s1_filters =
                 cond do
-                  opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
+                  opts_s1_exclude_main_filter and opts_s1_exclude_opts_filter ->
                     []
 
-                  not opts_s1_exclude_index_filter and opts_s1_exclude_opts_filter ->
+                  not opts_s1_exclude_main_filter and opts_s1_exclude_opts_filter ->
                     [{index, :eq, value}]
 
-                  opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter ->
+                  opts_s1_exclude_main_filter and not opts_s1_exclude_opts_filter ->
                     opts_filters
 
-                  not opts_s1_exclude_index_filter and not opts_s1_exclude_opts_filter and opts_s1_combine_filters_with in @logical_operators ->
+                  not opts_s1_exclude_main_filter and not opts_s1_exclude_opts_filter and opts_s1_combine_filters_with in @logical_operators ->
                     Map.put(%{}, opts_s1_combine_filters_with, opts_filters ++ [{index, :eq, value}])
 
                   true ->
                     UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
-                      s1_exclude_index_filter: opts_s1_exclude_index_filter,
+                      s1_exclude_main_filter: opts_s1_exclude_main_filter,
                       s1_exclude_opts_filter: opts_s1_exclude_opts_filter,
                       s1_combine_filters_with: opts_s1_combine_filters_with
                     )
@@ -1642,21 +1645,21 @@ defmodule Mnesiar.Repo do
                       else
                         s2_filters =
                           cond do
-                            opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
+                            opts_s2_exclude_main_filter and opts_s2_exclude_opts_filter ->
                               []
 
-                            not opts_s2_exclude_index_filter and opts_s2_exclude_opts_filter ->
+                            not opts_s2_exclude_main_filter and opts_s2_exclude_opts_filter ->
                               [{:id, :eq, id}]
 
-                            opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter ->
+                            opts_s2_exclude_main_filter and not opts_s2_exclude_opts_filter ->
                               opts_filters
 
-                            not opts_s2_exclude_index_filter and not opts_s2_exclude_opts_filter and opts_s2_combine_filters_with in @logical_operators ->
+                            not opts_s2_exclude_main_filter and not opts_s2_exclude_opts_filter and opts_s2_combine_filters_with in @logical_operators ->
                               Map.put(%{}, opts_s2_combine_filters_with, opts_filters ++ [{:id, :eq, id}])
 
                             true ->
                               UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
-                                s2_exclude_index_filter: opts_s2_exclude_index_filter,
+                                s2_exclude_main_filter: opts_s2_exclude_main_filter,
                                 s2_exclude_opts_filter: opts_s2_exclude_opts_filter,
                                 s2_combine_filters_with: opts_s2_combine_filters_with
                               )
