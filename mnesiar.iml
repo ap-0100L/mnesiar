@@ -15,7 +15,7 @@
       <excludeFolder url="file://$MODULE_DIR$/assets/node_modules/phoenix" />
       <excludeFolder url="file://$MODULE_DIR$/log/rest_api_client_node0@127.0.0.1" />
     </content>
-    <orderEntry type="jdk" jdkName="Elixir at /usr/lib/elixir" jdkType="Elixir SDK" />
+    <orderEntry type="jdk" jdkName="Elixir at /usr/lib/elixir (2)" jdkType="Elixir SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="phoenix" level="project" />
     <orderEntry type="library" name="telemetry_metrics" level="project" />
