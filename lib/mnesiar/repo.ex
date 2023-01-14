@@ -1405,11 +1405,7 @@ defmodule Mnesiar.Repo do
         result =
           if result == {:ok, :CODE_NOTHING_FOUND} do
             if is_nil(@persistent_schema) do
-              if is_list(result) do
-                result
-              else
-                [result]
-              end
+              result
             else
               s1_filters =
                 cond do
