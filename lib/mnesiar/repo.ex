@@ -1368,6 +1368,10 @@ defmodule Mnesiar.Repo do
 
       def get_by_id!(id, opts) do
         opts_skip_cache_check = Keyword.get(opts, :skip_cache_check, false)
+        opts_skip_persistent_check = Keyword.get(opts, :skip_persistent_check, false)
+
+        opts = Keyword.delete(opts, :skip_cache_check)
+        opts = Keyword.delete(opts, :skip_persistent_check)
 
         result =
           if opts_skip_cache_check do
@@ -1376,7 +1380,7 @@ defmodule Mnesiar.Repo do
             MnesiarRepo.read!(@table_name, id)
           end
 
-        opts_filters = Keyword.get(opts, :filters, [])
+        opts_filters = Keyword.get(opts, :filters, [{:state_id, :eq, "active"}])
 
         opts_s1_exclude_main_filter = Keyword.get(opts, :s1_exclude_main_filter, false)
         opts_s1_exclude_opts_filter = Keyword.get(opts, :s1_exclude_opts_filter, false)
@@ -1404,9 +1408,7 @@ defmodule Mnesiar.Repo do
         # TODO: Please, try to use COND instead IF
         result =
           if result == {:ok, :CODE_NOTHING_FOUND} do
-            if is_nil(@persistent_schema) do
-              result
-            else
+            if not is_nil(@persistent_schema) and not opts_skip_persistent_check do
               s1_filters =
                 cond do
                   opts_s1_exclude_main_filter and opts_s1_exclude_opts_filter ->
@@ -1430,6 +1432,8 @@ defmodule Mnesiar.Repo do
                 end
 
               SelfModule.get_persistent!(s1_filters, limit, opts)
+            else
+              result
             end
           else
             {:ok, cached_data_ttl} = StateUtils.get_state!(SelfModule, :cached_data_ttl)
@@ -1458,9 +1462,7 @@ defmodule Mnesiar.Repo do
                     if now - timestamp > cached_data_ttl and not is_nil(@persistent_schema) do
                       SelfModule.delete!(id)
 
-                      if is_nil(@persistent_schema) do
-                        accum
-                      else
+                      if not is_nil(@persistent_schema) and not opts_skip_persistent_check do
                         s2_filters =
                           cond do
                             opts_s2_exclude_main_filter and opts_s2_exclude_opts_filter ->
@@ -1490,6 +1492,8 @@ defmodule Mnesiar.Repo do
                         else
                           accum ++ items2
                         end
+                      else
+                        accum
                       end
                     else
                       accum ++ [item]
@@ -1519,6 +1523,7 @@ defmodule Mnesiar.Repo do
           username = "system"
           opts = [
             skip_cache_check: false,
+            skip_persistent_check: false,
 
             # s1 control pure select from persistent db
             s1_exclude_main_filter: true,
@@ -1547,7 +1552,13 @@ defmodule Mnesiar.Repo do
       def find_with_index!(index, value, opts \\ [])
 
       def find_with_index!(index, value, opts) do
+        IO.inspect(opts, label: "[opts]")
+
         opts_skip_cache_check = Keyword.get(opts, :skip_cache_check, false)
+        opts_skip_persistent_check = Keyword.get(opts, :skip_persistent_check, false)
+
+        opts = Keyword.delete(opts, :skip_cache_check)
+        opts = Keyword.delete(opts, :skip_persistent_check)
 
         result =
           if opts_skip_cache_check do
@@ -1556,7 +1567,7 @@ defmodule Mnesiar.Repo do
             MnesiarRepo.find_with_index!(@table_name, index, value)
           end
 
-        opts_filters = Keyword.get(opts, :filters, [])
+        opts_filters = Keyword.get(opts, :filters, [{:state_id, :eq, "active"}])
 
         opts_s1_exclude_main_filter = Keyword.get(opts, :s1_exclude_main_filter, false)
         opts_s1_exclude_opts_filter = Keyword.get(opts, :s1_exclude_opts_filter, false)
@@ -1582,9 +1593,7 @@ defmodule Mnesiar.Repo do
         # TODO: Please, try to use COND instead IF
         result =
           if result == {:ok, :CODE_NOTHING_FOUND} do
-            if is_nil(@persistent_schema) do
-              result
-            else
+            if not is_nil(@persistent_schema) and not opts_skip_persistent_check do
               s1_filters =
                 cond do
                   opts_s1_exclude_main_filter and opts_s1_exclude_opts_filter ->
@@ -1607,7 +1616,10 @@ defmodule Mnesiar.Repo do
                     )
                 end
 
+              IO.inspect(s1_filters, label: "[s1_filters]")
               SelfModule.get_persistent!(s1_filters, limit, opts)
+            else
+              result
             end
           else
             {:ok, cached_data_ttl} = StateUtils.get_state!(SelfModule, :cached_data_ttl)
@@ -1636,9 +1648,7 @@ defmodule Mnesiar.Repo do
                     if now - timestamp > cached_data_ttl and not is_nil(@persistent_schema) do
                       SelfModule.delete!(id)
 
-                      if is_nil(@persistent_schema) do
-                        accum
-                      else
+                      if not is_nil(@persistent_schema) and not opts_skip_persistent_check do
                         s2_filters =
                           cond do
                             opts_s2_exclude_main_filter and opts_s2_exclude_opts_filter ->
@@ -1668,6 +1678,8 @@ defmodule Mnesiar.Repo do
                         else
                           accum ++ items2
                         end
+                      else
+                        accum
                       end
                     else
                       accum ++ [item]
