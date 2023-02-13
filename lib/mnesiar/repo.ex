@@ -1421,7 +1421,7 @@ defmodule Mnesiar.Repo do
                     opts_filters
 
                   not opts_s1_exclude_main_filter and not opts_s1_exclude_opts_filter and opts_s1_combine_filters_with in @logical_operators ->
-                    Map.put(%{}, opts_s1_combine_filters_with, opts_filters ++ [{:id, :eq, id}])
+                    Map.put(%{}, opts_s1_combine_filters_with, [{:id, :eq, id}] ++ opts_filters)
 
                   true ->
                     UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
@@ -1475,7 +1475,7 @@ defmodule Mnesiar.Repo do
                               opts_filters
 
                             not opts_s2_exclude_main_filter and not opts_s2_exclude_opts_filter and opts_s2_combine_filters_with in @logical_operators ->
-                              Map.put(%{}, opts_s2_combine_filters_with, opts_filters ++ [{:id, :eq, id}])
+                              Map.put(%{}, opts_s2_combine_filters_with, [{:id, :eq, id}] ++ opts_filters)
 
                             true ->
                               UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
@@ -1606,7 +1606,7 @@ defmodule Mnesiar.Repo do
                     opts_filters
 
                   not opts_s1_exclude_main_filter and not opts_s1_exclude_opts_filter and opts_s1_combine_filters_with in @logical_operators ->
-                    Map.put(%{}, opts_s1_combine_filters_with, opts_filters ++ [{index, :eq, value}])
+                    Map.put(%{}, opts_s1_combine_filters_with, [{index, :eq, value}] ++ opts_filters)
 
                   true ->
                     UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
@@ -1661,7 +1661,7 @@ defmodule Mnesiar.Repo do
                               opts_filters
 
                             not opts_s2_exclude_main_filter and not opts_s2_exclude_opts_filter and opts_s2_combine_filters_with in @logical_operators ->
-                              Map.put(%{}, opts_s2_combine_filters_with, opts_filters ++ [{:id, :eq, id}])
+                              Map.put(%{}, opts_s2_combine_filters_with, [{:id, :eq, id}] ++ opts_filters)
 
                             true ->
                               UniError.raise_error!(:CODE_UNEXPECTED_OPTS_COMBINATION_ERROR, ["Unexpected options combination"],
