@@ -1225,7 +1225,7 @@ defmodule Mnesiar.Repo do
           if kep_timestamp do
             o
           else
-            now = System.system_time(:second)
+            now = System.os_time(:second)
             {:ok, o} = put!(o, :timestamp, now)
             o
           end
@@ -1451,7 +1451,7 @@ defmodule Mnesiar.Repo do
                 items,
                 [],
                 fn item, accum ->
-                  now = System.system_time(:second)
+                  now = System.os_time(:second)
 
                   {:ok, timestamp} = SelfModule.get!(item, :timestamp)
                   {:ok, id} = SelfModule.get!(item, :id)
@@ -1637,7 +1637,7 @@ defmodule Mnesiar.Repo do
                 items,
                 [],
                 fn item, accum ->
-                  now = System.system_time(:second)
+                  now = System.os_time(:second)
 
                   {:ok, timestamp} = SelfModule.get!(item, :timestamp)
                   {:ok, id} = SelfModule.get!(item, :id)
