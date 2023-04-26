@@ -590,7 +590,7 @@ defmodule Mnesiar do
   def get_config!(config) do
     config =
       if is_nil(config) do
-        {:ok, config} = Utils.get_app_env!(:mnesiar, :config)
+        {:ok, config} = Utils.get_app_env(:mnesiar, :config)
 
         config
       else
