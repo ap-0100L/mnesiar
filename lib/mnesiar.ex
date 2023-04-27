@@ -269,7 +269,7 @@ defmodule Mnesiar do
       if schema_ram_copies_node_name_prefixes == :all do
         [node]
       else
-        {:ok, nodes} = Utils.get_nodes_list_by_prefixes!(schema_ram_copies_node_name_prefixes, [node])
+        {:ok, nodes} = Utils.get_nodes_list_by_prefixes(schema_ram_copies_node_name_prefixes, [node])
 
         nodes
       end
@@ -278,7 +278,7 @@ defmodule Mnesiar do
       if schema_disc_copies_node_name_prefixes == :all do
         [node]
       else
-        {:ok, nodes} = Utils.get_nodes_list_by_prefixes!(schema_disc_copies_node_name_prefixes, [node])
+        {:ok, nodes} = Utils.get_nodes_list_by_prefixes(schema_disc_copies_node_name_prefixes, [node])
 
         nodes
       end
@@ -315,11 +315,11 @@ defmodule Mnesiar do
         disc_copies_node_name_prefixes = entity[:disc_copies_node_name_prefixes]
         disc_only_copies_node_name_prefixes = entity[:disc_only_copies_node_name_prefixes]
 
-        {:ok, ram_copies_nodes} = Utils.get_nodes_list_by_prefixes!(ram_copies_node_name_prefixes, [node])
+        {:ok, ram_copies_nodes} = Utils.get_nodes_list_by_prefixes(ram_copies_node_name_prefixes, [node])
 
-        {:ok, disc_copies_nodes} = Utils.get_nodes_list_by_prefixes!(disc_copies_node_name_prefixes, [node])
+        {:ok, disc_copies_nodes} = Utils.get_nodes_list_by_prefixes(disc_copies_node_name_prefixes, [node])
 
-        {:ok, disc_only_copies_nodes} = Utils.get_nodes_list_by_prefixes!(disc_only_copies_node_name_prefixes, [node])
+        {:ok, disc_only_copies_nodes} = Utils.get_nodes_list_by_prefixes(disc_only_copies_node_name_prefixes, [node])
 
         :ok =
           apply(module, :create_table!, [
@@ -376,7 +376,7 @@ defmodule Mnesiar do
       if remote_access_only_node_name_prefixes == :all do
         [node]
       else
-        {:ok, nodes} = Utils.get_nodes_list_by_prefixes!(remote_access_only_node_name_prefixes, [node])
+        {:ok, nodes} = Utils.get_nodes_list_by_prefixes(remote_access_only_node_name_prefixes, [node])
 
         nodes
       end
@@ -385,7 +385,7 @@ defmodule Mnesiar do
       if schema_ram_copies_node_name_prefixes == :all do
         [node]
       else
-        {:ok, nodes} = Utils.get_nodes_list_by_prefixes!(schema_ram_copies_node_name_prefixes, [node])
+        {:ok, nodes} = Utils.get_nodes_list_by_prefixes(schema_ram_copies_node_name_prefixes, [node])
 
         nodes
       end
@@ -394,7 +394,7 @@ defmodule Mnesiar do
       if schema_disc_copies_node_name_prefixes == :all do
         [node]
       else
-        {:ok, nodes} = Utils.get_nodes_list_by_prefixes!(schema_disc_copies_node_name_prefixes, [node])
+        {:ok, nodes} = Utils.get_nodes_list_by_prefixes(schema_disc_copies_node_name_prefixes, [node])
 
         nodes
       end
@@ -458,7 +458,7 @@ defmodule Mnesiar do
             if ram_copies_node_name_prefixes == :all do
               [node]
             else
-              {:ok, nodes} = Utils.get_nodes_list_by_prefixes!(ram_copies_node_name_prefixes, [node])
+              {:ok, nodes} = Utils.get_nodes_list_by_prefixes(ram_copies_node_name_prefixes, [node])
 
               nodes
             end
@@ -467,7 +467,7 @@ defmodule Mnesiar do
             if disc_copies_node_name_prefixes == :all do
               [node]
             else
-              {:ok, nodes} = Utils.get_nodes_list_by_prefixes!(disc_copies_node_name_prefixes, [node])
+              {:ok, nodes} = Utils.get_nodes_list_by_prefixes(disc_copies_node_name_prefixes, [node])
 
               nodes
             end
@@ -476,7 +476,7 @@ defmodule Mnesiar do
             if disc_only_copies_node_name_prefixes == :all do
               [node]
             else
-              {:ok, nodes} = Utils.get_nodes_list_by_prefixes!(disc_only_copies_node_name_prefixes, [node])
+              {:ok, nodes} = Utils.get_nodes_list_by_prefixes(disc_only_copies_node_name_prefixes, [node])
 
               nodes
             end
